@@ -187,7 +187,7 @@ print(f"Prophet RMSE: {rmse_prophet:.2f}, SMAPE: %{smape_prophet:.2f}, R2:{r2_pr
 print(f"SARIMA  RMSE: {rmse_sarima:.2f}, SMAPE: %{smape_sarima:.2f}, R2:{r2_sarima:.2f}")
 
 #Günlük - Haftalık _aylık Satış Trendleri
-"""plot_sales_trend(df, freq="D",title="Günlük Satış Trendleri")
+plot_sales_trend(df, freq="D",title="Günlük Satış Trendleri")
 plot_sales_trend(df, freq="W",title="Haftalık Satış Trendleri")
 plot_sales_trend(df, freq="M",title="Aylık Satış Trendleri")
 
@@ -206,12 +206,13 @@ plot_correlation(df)
 #Pie chart
 pie_cols=["Ship Mode", "Segment", "Region", "Category", "Year"]
 for c in pie_cols:
-    plot_pie_chart(df, value_col=c, target_col="Sales", title=f"{c} - Sales", top_n=8)"""
+    plot_pie_chart(df, value_col=c, target_col="Sales", title=f"{c} - Sales", top_n=8)
 
 #kategorik değişkenler için violin plot
 df_filtered_cols=[col for col in df if df[col].nunique()<=10 and df[col].dtype.name=="category"]
 for c in df_filtered_cols:
     plot_categorical_violin(df,c,"Sales")
+
 
 
 
