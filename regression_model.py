@@ -10,8 +10,6 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import GridSearchCV
 from model_metrics import *
 
-
-
 def train_regression_model(df,test_size=0.2,random_state=42):
     try:
         ##Linear Regression Modeli

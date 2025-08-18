@@ -30,6 +30,8 @@ def inspect_data(df):
     print(df.head())
     print("\n[INFO] Son Satırlar:")
     print(df.tail())
+    print("\n[INFO] Benzersiz Değer Sayısı:")
+    print(df.nunique())
     print("\n[INFO] Eksik Değer Sayıları:")
     print(df.isnull().sum())
     print("\n[INFO] Satır-Sütun Sayısı:")
