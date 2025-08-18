@@ -1,5 +1,4 @@
 import pandas as pd
-from prophet import Prophet
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score,mean_absolute_percentage_error,root_mean_squared_error
 import numpy as np
@@ -7,6 +6,13 @@ import warnings
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from datetime import datetime
+import os
+
+try:
+    from prophet import Prophet
+except ImportError:
+    os.system("pip install prophet cmdstanpy")
+    from prophet import Prophet
 
 
 from preprocessing import *
