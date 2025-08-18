@@ -5,18 +5,16 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 from prophet import Prophet
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-from sklearn.metrics import mean_squared_error
-
+from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
 from data_loader import *
 from data_visualization import *
-from main import *
 from model_metrics import *
 from preprocessing import *
 from regression_model import *
 from time_series_modeling import *
 
 
-# --- Sayfa ayarları ---
+# Sayfa ayarları
 st.set_page_config(page_title="Market Sales Analysis", layout="wide", page_icon="📊")
 
 st.markdown("""
@@ -26,7 +24,7 @@ Bu uygulama, satış verilerini analiz etmek, ***linear regression modeli*** ve 
 df = pd.read_csv("train.csv")   # buradaki ismi senin dosyaya göre değiştir
 df["Order Date"] = pd.to_datetime(df["Order Date"], dayfirst=True)
 
-# --- Veri Yükleme ---
+# Veri yükleme
 @st.cache_data
 def get_data():
     path = "train.csv"  # senin dataset
@@ -45,7 +43,7 @@ st.sidebar.markdown("---")
 st.sidebar.info("Market Sales Analysis App")
 
 
-# --- 1. Veri Önizleme ---
+#1.Veri Temizleme
 if menu == "📂 Veri Önizleme":
     st.header("📂 Veri Önizleme")
     st.write("### İlk 20 Satır")
@@ -55,7 +53,7 @@ if menu == "📂 Veri Önizleme":
     st.write("### Veri Özeti")
     st.write(df.describe(include="all"))
 
-# --- 2. Ön İşleme ---
+# 2.Ön işleme
 elif menu == "🔧 Ön İşleme":
     st.header("🔧 Veri Ön İşleme")
 
@@ -70,7 +68,7 @@ elif menu == "🔧 Ön İşleme":
     st.success("Ön işleme tamamlandı ✅")
     st.dataframe(df.head())
 
-# --- 3. Görselleştirmeler ---
+# 3. görselleştirme
 elif menu == "📊 Görselleştirmeler":
     st.header("📊 Keşifsel Veri Görselleştirme")
 
@@ -80,7 +78,7 @@ elif menu == "📊 Görselleştirmeler":
     st.subheader("Kategorilere Göre Satış Dağılımı")
     plot_pie_chart(df, label_col="Category", value_col="Sales", title="Kategori - Satış")
 
-# --- 4. Zaman Serisi ---
+# 4.Zaman serisi
 elif menu == "📈 Zaman Serisi Tahminleri":
     st.header("📈 Zaman Serisi Tahminleri")
 
@@ -169,7 +167,7 @@ elif menu == "📈 Zaman Serisi Tahminleri":
     st.pyplot(fig3)
 
 
- # --- Zaman Serisi Metrikleri ---
+ # Zaman serisi metrikleri
     st.subheader("📊 Model Performans Metrikleri (7 Günlük)")
 
     # Prophet metrikleri
@@ -186,8 +184,8 @@ elif menu == "📈 Zaman Serisi Tahminleri":
     y_pred_sarima = forecast_sarima.predicted_mean
     y_pred_sarima.index = y_true_sarima.index
 
-    rmse_prophet = root_mean_squared_error(y_true_prophet, y_pred_prophet)
-    rmse_sarima = root_mean_squared_error(y_true_sarima, y_pred_sarima)
+    rmse_prophet = np.sqrt(mean_squared_error(y_true_prophet, y_pred_prophet))
+    rmse_sarima = np.sqrt(mean_squared_error(y_true_sarima, y_pred_sarima))
 
     smape_prophet = smape(y_true_prophet, y_pred_prophet)
     smape_sarima = smape(y_true_sarima, y_pred_sarima)
@@ -204,27 +202,47 @@ elif menu == "📈 Zaman Serisi Tahminleri":
     })
     st.dataframe(metrics_df)
 
-# --- 5. Regresyon Modeli ---
+# 5. Regresyon modeli
 elif menu == "📉 Regresyon Modeli":
     st.header("📉 Regresyon Modeli Performansı")
 
     try:
-        # train_regression_model, regression_model.py içinden geliyor
-        metrics = train_regression_model(df)
+        result = train_regression_model(df)
+
+        # Eğer fonksiyon dict döndürüyorsa doğrudan al
+        if isinstance(result, dict):
+            metrics = result
+        else:
+            from sklearn.model_selection import train_test_split
+            from sklearn.linear_model import LinearRegression
+
+            X = df[["Postal Code"]]
+            y = df["Sales"]
+
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+            model = LinearRegression()
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+
+            metrics = {
+                "MAE": mean_absolute_error(y_test, y_pred),
+                "MSE": mean_squared_error(y_test, y_pred),
+                "RMSE": root_mean_squared_error(y_test, y_pred),  # model_metrics.py'den
+                "R2": r2_score(y_test, y_pred),
+                "SMAPE": smape(y_test, y_pred)                   # model_metrics.py'den
+            }
 
         st.subheader("🔎 Regresyon Modeli Metrikleri")
-        st.write("Aşağıda modelin performans metrikleri gösterilmektedir:")
-
-        # Metrikleri tablo halinde göster
         metrics_df = pd.DataFrame([metrics])
         st.dataframe(metrics_df)
 
-        # JSON formatında da görmek isteyenler için
-        with st.expander("JSON Görünümü"):
-            st.json(metrics)
-
     except Exception as e:
         st.error(f"Regresyon modeli çalıştırılırken hata oluştu: {e}")
+
+
+ 
+        
 
 
 
