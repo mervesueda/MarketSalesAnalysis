@@ -1,3 +1,4 @@
+cmdstanpy
 streamlit
 pandas
 numpy
@@ -8,5 +9,6 @@ seaborn
 plotly
 prophet
 pmdarima
+pystan
 xgboost
 
