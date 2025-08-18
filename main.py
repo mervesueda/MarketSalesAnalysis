@@ -7,12 +7,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from datetime import datetime
 import os
-
-try:
-    from prophet import Prophet
-except ImportError:
-    os.system("pip install prophet cmdstanpy")
-    from prophet import Prophet
+from prophet import Prophet
+    
 
 
 from preprocessing import *
