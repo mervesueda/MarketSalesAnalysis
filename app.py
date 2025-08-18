@@ -14,7 +14,7 @@ Bu uygulama, satış verilerini analiz etmek, linear regression modeli ve **zama
 """)
 
 df = pd.read_csv("train.csv")   # buradaki ismi senin dosyaya göre değiştir
-df["Order Date"] = pd.to_datetime(df["Order Date"])
+df["Order Date"] = pd.to_datetime(df["Order Date"], dayfirst=True)
 
 st.write("### Veri Önizleme")
 st.dataframe(df.head())
