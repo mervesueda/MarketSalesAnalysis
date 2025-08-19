@@ -69,14 +69,27 @@ elif menu == "🔧 Ön İşleme":
 
             try:
                 df_clean, steps = preprocess_data(df)   # ✅ iki değer yakala
+
+                # 📌 Eksik Postal Code satırlarını sil
+                before_rows = df_clean.shape[0]
+                df_clean = df_clean.dropna(subset=["Postal Code"])
+                after_rows = df_clean.shape[0]
+                removed_rows = before_rows - after_rows
+
                 st.success("✅ Veri ön işleme tamamlandı!")
                 st.subheader("İşlenmiş Veri Önizleme")
                 st.dataframe(df_clean.head())
+
+                # Kullanıcıya bilgi ver
+                if removed_rows > 0:
+                    st.info(f"📌 {removed_rows} satır 'Postal Code' eksik olduğu için silindi. "
+                            f"Kalan satır sayısı: {after_rows}")
 
                 # Yapılan işlemleri göster
                 st.subheader("🔎 Yapılan İşlemler")
                 for step in steps:
                     st.write("•", step)
+                st.write("• Eksik 'Postal Code' satırları silindi")
 
                 # İndirme seçeneği
                 csv = df_clean.to_csv(index=False).encode("utf-8")
@@ -89,6 +102,7 @@ elif menu == "🔧 Ön İşleme":
 
             except Exception:
                 st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
+
 
 
 elif menu == "📊 Görselleştirmeler":
