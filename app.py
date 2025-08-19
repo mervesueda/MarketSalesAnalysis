@@ -102,6 +102,12 @@ grafik_listesi = [
     "Bölgelere Göre Satış Dağılımı",
     "Yıllara Göre Satış Dağılımı",
     "Sezonlara Göre Satış Dağılımı",
+    "Alt Kategori Bazında Aylık Satış Dağılımı",
+    "En Çok Satış Yapan 10 Şehir",
+    "En Çok Satılan 10 Ürün",
+    "KDE Grafikleri"
+    "Lag Features ve MA Değişkenini Gösteren Grafik",
+    "Violin Plot"
 ]
 
 secilen_grafik = st.selectbox("Gösterilecek grafiği seçin:", grafik_listesi)
@@ -142,6 +148,33 @@ if st.button("📈 Grafiği Göster"):
     elif secilen_grafik == "Sezonlara Göre Satış Dağılımı":
         fig = plot_pie_chart(df, "Season", "Sales", "Sezon - Satış")
         st.pyplot(fig)
+
+    elif secilen_grafik == "Alt Kategori Bazında Aylık Satış Dağılımı":
+        fig = plot_subcategory_trend(df)
+        st.pyplot(fig)
+
+    elif secilen_grafik == "En Çok Satış Yapan 10 Şehir":
+        fig = plot_top_cities(df, top_n=10)
+        st.pyplot(fig)
+
+    elif secilen_grafik == "En Çok Satılan 10 Ürün":
+        fig = plot_top_products(df, top_n=10)
+        st.pyplot(fig)
+
+    elif secilen_grafik == "KDE Grafikleri":
+        fig = plot_sales_kde(df)
+        st.pyplot(fig)
+
+    elif secilen_grafik == "Lag Features ve MA Değişkenini Gösteren Grafik":
+        fig = plot_lag_and_ma(df)
+        st.pyplot(fig)
+
+    elif secilen_grafik == "Violin Plot":
+        df_filtered_cols=[col for col in df if df[col].nunique()<=10 and df[col].dtype.name=="category"]
+        for c in df_filtered_cols:
+            fig=plot_categorical_violin(df,c,"Sales")
+            st.pyplot(fig)
+    
 
 
 
