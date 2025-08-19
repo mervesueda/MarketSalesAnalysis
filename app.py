@@ -237,7 +237,7 @@ elif menu == "📈 Zaman Serisi Tahminleri":
         try:
             from pmdarima import auto_arima
         except ImportError:
-            st.error("❌ pmdarima kütüphanesi yüklü değil. Lütfen 'pip install pmdarima' komutu ile yükleyin.")
+            st.error("❌ pmdarima kütüphanesi mevcut değil. Lütfen 'pip install pmdarima' komutu ile yükleyin.")
             st.stop()
 
         # Spinner ile birlikte auto_arima
