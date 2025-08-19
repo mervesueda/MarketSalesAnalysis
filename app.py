@@ -55,6 +55,7 @@ if menu == "📂 Veri Önizleme":
     st.write("### Veri Özeti")
     st.write(df.describe(include="all"))
 
+
 # 2.Ön işleme
 elif menu == "🔧 Ön İşleme":
     if st.button("🚀 Veri Ön İşlemeyi Başlat"):
@@ -63,7 +64,6 @@ elif menu == "🔧 Ön İşleme":
             progress_text = "Veri ön işleniyor..."
             my_bar = st.progress(0, text=progress_text)
 
-            # Burada preprocess_data fonksiyonunu çağırıyoruz
             for percent_complete in range(0, 101, 20):
                 time.sleep(0.5)  # sadece simülasyon için
                 my_bar.progress(percent_complete, text=progress_text)
@@ -83,21 +83,10 @@ elif menu == "🔧 Ön İşleme":
                     mime="text/csv"
                 )
 
-            except Exception as e:
-                st.error(f"Hata oluştu: {e}")
-    
-    """st.header("🔧 Veri Ön İşleme")
+            except Exception:
+                # Traceback veya kodu gösterme!
+                st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
 
-    df = convert_to_datetime(df, "Order Date", dayfirst=True, fmt="%d/%m/%Y")
-    df = convert_to_datetime(df, "Ship Date", dayfirst=True, fmt="%d/%m/%Y")
-    df = drop_missing_rows(df)
-
-    cols_to_remove = ["Row ID","Order ID","Customer ID","Product ID","Country"]
-    df = df.drop(columns=cols_to_remove, errors="ignore")
-
-    df = convert_to_category(df, ["Ship Mode", "Segment", "Region", "Category", "Sub-Category"])
-    st.success("Ön işleme tamamlandı ✅")
-    st.dataframe(df.head())"""
 
 # 3. görselleştirme
 elif menu == "📊 Görselleştirmeler":
