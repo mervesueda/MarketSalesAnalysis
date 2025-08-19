@@ -12,6 +12,7 @@ from model_metrics import *
 from preprocessing import *
 from regression_model import *
 from time_series_modeling import *
+import time
 
 
 # Sayfa ayarları
@@ -56,7 +57,36 @@ if menu == "📂 Veri Önizleme":
 
 # 2.Ön işleme
 elif menu == "🔧 Ön İşleme":
-    st.header("🔧 Veri Ön İşleme")
+    if st.button("🚀 Veri Ön İşlemeyi Başlat"):
+        with st.spinner("Veri ön işleme başlatılıyor..."):
+            # Adım adım ilerleme göstergesi
+            progress_text = "Veri ön işleniyor..."
+            my_bar = st.progress(0, text=progress_text)
+
+            # Burada preprocess_data fonksiyonunu çağırıyoruz
+            for percent_complete in range(0, 101, 20):
+                time.sleep(0.5)  # sadece simülasyon için
+                my_bar.progress(percent_complete, text=progress_text)
+
+            try:
+                df_clean = preprocess_data(df)
+                st.success("✅ Veri ön işleme tamamlandı!")
+                st.subheader("İşlenmiş Veri Önizleme")
+                st.dataframe(df_clean.head())
+
+                # İndirme seçeneği
+                csv = df_clean.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="📥 İşlenmiş Veriyi İndir",
+                    data=csv,
+                    file_name="clean_data.csv",
+                    mime="text/csv"
+                )
+
+            except Exception as e:
+                st.error(f"Hata oluştu: {e}")
+    
+    """st.header("🔧 Veri Ön İşleme")
 
     df = convert_to_datetime(df, "Order Date", dayfirst=True, fmt="%d/%m/%Y")
     df = convert_to_datetime(df, "Ship Date", dayfirst=True, fmt="%d/%m/%Y")
@@ -67,7 +97,7 @@ elif menu == "🔧 Ön İşleme":
 
     df = convert_to_category(df, ["Ship Mode", "Segment", "Region", "Category", "Sub-Category"])
     st.success("Ön işleme tamamlandı ✅")
-    st.dataframe(df.head())
+    st.dataframe(df.head())"""
 
 # 3. görselleştirme
 elif menu == "📊 Görselleştirmeler":
