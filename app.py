@@ -288,17 +288,25 @@ elif menu == "📈 Zaman Serisi Tahminleri":
             forecast_sarima = results_sarima.get_forecast(7)
             forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
 
-            # Güven aralıkları
-            ci = forecast_sarima.conf_int().copy()
-            ci.columns = ["yhat_lower", "yhat_upper"]
-            ci = ci.reindex(forecast_sarima_mean.index)
+            ci = forecast_sarima.conf_int().copy() 
+            ci.columns=["yhat_lower","yhat_upper"]
+            forecast_sarima_mean.index = test_sarima.index[:7]
+            ci.index = test_sarima.index[:7]
 
-            # SARIMA Tahmin tablosunu göster
-            st.write("SARIMA Tahmin Tablosu (Gelecek 7 Gün)")
-            forecast_display = forecast_sarima_mean.copy()
-            forecast_display["Tarih"] = forecast_display.index.strftime('%Y-%m-%d')
-            forecast_display = forecast_display[["Tarih", "yhat_sarima"]].round(2)
-            st.dataframe(forecast_display)
+            # Gerçek değerleri çiz
+            ax = df_sarima['Sales'].plot(label='Sales', figsize=(20, 6),color="#61AC80")
+
+            # SARIMA tahminlerini çiz
+            fig3=forecast_sarima.predicted_mean.plot(ax=ax, label='SARIMA Predict', color="#487D95")
+
+            # Güven aralığını doldur
+            ax.fill_between(ci.index,
+                            ci.iloc[:, 0],
+                            ci.iloc[:, 1],
+                            color='#487D95', alpha=0.2)
+
+            forecast_end = ci.index[-1]  # Tahminin son günü
+            ax.set_xlim(df_sarima.index.min(), forecast_end)
 
             # Çizim
             fig3, ax = plt.subplots(figsize=(12, 6))
