@@ -55,7 +55,6 @@ if menu == "📂 Veri Önizleme":
     st.write("### Veri Özeti")
     st.write(df.describe(include="all"))
 
-
 elif menu == "🔧 Ön İşleme":
     if st.button("🚀 Veri Ön İşlemeyi Başlat"):
         with st.spinner("Veri ön işleme başlatılıyor..."):
@@ -67,12 +66,12 @@ elif menu == "🔧 Ön İşleme":
                 my_bar.progress(percent_complete, text=progress_text)
 
             try:
-                # preprocess_data çağrısı (df_clean, steps döner)
+                # preprocess_data çalıştır
                 df_clean, steps = preprocess_data(df)
 
-                # 📌 Eksik satırları sil (sütun adlarına dokunmadan)
+                # 📌 Sadece Postal Code boş olan satırları sil
                 before_rows = df_clean.shape[0]
-                df_clean = df_clean.dropna()   # tüm NaN satırları temizle
+                df_clean = df_clean.dropna(subset=["Postal Code"])
                 after_rows = df_clean.shape[0]
                 removed_rows = before_rows - after_rows
 
@@ -83,18 +82,17 @@ elif menu == "🔧 Ön İşleme":
                 st.subheader("İşlenmiş Veri Önizleme")
                 st.dataframe(df_clean.head())
 
-                # Kullanıcıya bilgi ver
                 if removed_rows > 0:
-                    st.info(f"📌 {removed_rows} satır eksik veri içerdiği için silindi. "
+                    st.info(f"📌 'Postal Code' sütunu boş olan {removed_rows} satır silindi. "
                             f"Kalan satır sayısı: {after_rows}")
 
-                # Yapılan işlemleri göster
+                # Yapılan işlemler listesine bunu da ekle
                 st.subheader("🔎 Yapılan İşlemler")
                 for step in steps:
                     st.write("•", step)
-                st.write("• Eksik veriler içeren satırlar silindi")
+                st.write("• 'Postal Code' sütunu boş olan satırlar silindi")
 
-                # İndirme seçeneği
+                # CSV indirme
                 csv = df_clean.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="📥 İşlenmiş Veriyi İndir",
@@ -105,7 +103,6 @@ elif menu == "🔧 Ön İşleme":
 
             except Exception as e:
                 st.error(f"❌ Veri ön işleme sırasında bir hata oluştu: {e}")
-
 
 
 elif menu == "📊 Görselleştirmeler":
