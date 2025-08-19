@@ -91,93 +91,58 @@ elif menu == "🔧 Ön İşleme":
                 st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
 
 
+# Grafik seçenekleri
+grafik_listesi = [
+    "Günlük Satış Trendleri",
+    "Haftalık Satış Trendleri",
+    "Aylık Satış Trendleri",
+    "Korelasyon Isı Haritası",
+    "Kategorilere Göre Satış Dağılımı",
+    "Segmentlere Göre Satış Dağılımı",
+    "Bölgelere Göre Satış Dağılımı",
+    "Yıllara Göre Satış Dağılımı",
+    "Sezonlara Göre Satış Dağılımı",
+]
 
-# 3. Görselleştirmeler
-elif menu == "📊 Görselleştirmeler":
-    st.header("📊 Keşifsel Veri Görselleştirme")
+secilen_grafik = st.selectbox("Gösterilecek grafiği seçin:", grafik_listesi)
 
-    # Grafik seçenekleri
-    grafik_listesi = [
-        "Günlük Satış Trendleri"
-        "Haftalık Satış Trendleri"
-        "Aylık Satış Trendleri"
-        "Korelasyon Isı Haritası",
-        "Kategorilere Göre Satış Dağılımı",
-        "Segmentlere Göre Satış Dağılımı",
-        "Bölgelere Göre Satış Dağılımı",
-        "Yıllara Göre Satış Dağılımı",
-        "Sezonlara Göre Satış Dağılımı",
-    ]
+if st.button("📈 Grafiği Göster"):
+    if secilen_grafik == "Günlük Satış Trendleri":
+        fig = plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="D", title="Günlük Satış Trendleri", color="#4F81BD")
+        st.pyplot(fig)
 
-    secilen_grafik = st.selectbox("Gösterilecek grafiği seçin:", grafik_listesi)
+    elif secilen_grafik == "Haftalık Satış Trendleri":
+        fig = plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="W", title="Haftalık Satış Trendleri", color="#6B8F81")
+        st.pyplot(fig)
 
-    if st.button("📈 Grafiği Göster"):
-        if secilen_grafik == "Günlük Satış Trendleri":
-            fig=plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="D", title="Günlük Satış Trendleri", color="#4F81BD")
-            st.pyplot(fig)
+    elif secilen_grafik == "Aylık Satış Trendleri":
+        fig = plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="M", title="Aylık Satış Trendleri", color="#7B17CE")
+        st.pyplot(fig)
 
-        elif secilen_grafik == "Haftalık Satış Trendleri":
-            fig=plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="W", title="Haftalık Satış Trendleri", color="#6B8F81")
-            st.pyplot(fig)
+    elif secilen_grafik == "Korelasyon Isı Haritası":
+        fig = plot_correlation(df)
+        st.pyplot(fig)
 
-        elif secilen_grafik == "Aylık Satış Trendleri":
-            fig=plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="M", title="Alyık Satış Trendleri", color="#7B17CE")
-            st.pyplot(fig)
+    elif secilen_grafik == "Kategorilere Göre Satış Dağılımı":
+        fig = plot_pie_chart(df, "Category", "Sales", "Kategori - Satış")
+        st.pyplot(fig)
 
+    elif secilen_grafik == "Segmentlere Göre Satış Dağılımı":
+        fig = plot_pie_chart(df, "Segment", "Sales", "Segment - Satış")
+        st.pyplot(fig)
 
-        elif secilen_grafik == "Korelasyon Isı Haritası":
-            fig = plot_correlation(df)   # fonksiyon fig return etmeli
-            st.pyplot(fig)
+    elif secilen_grafik == "Bölgelere Göre Satış Dağılımı":
+        fig = plot_pie_chart(df, "Region", "Sales", "Bölge - Satış")
+        st.pyplot(fig)
 
-        elif secilen_grafik == "Kategorilere Göre Satış Dağılımı":
-            fig = plot_pie_chart(df, label_col="Category", value_col="Sales", title="Kategori - Satış")
-            st.pyplot(fig)
+    elif secilen_grafik == "Yıllara Göre Satış Dağılımı":
+        fig = plot_pie_chart(df, "Year", "Sales", "Yıl - Satış")
+        st.pyplot(fig)
 
-        elif secilen_grafik == "Segmentlere Göre Satış Dağılımı":
-            fig = plot_pie_chart(df, label_col="Segment", value_col="Sales", title="Segment - Satış")
-            st.pyplot(fig)
+    elif secilen_grafik == "Sezonlara Göre Satış Dağılımı":
+        fig = plot_pie_chart(df, "Season", "Sales", "Sezon - Satış")
+        st.pyplot(fig)
 
-        elif secilen_grafik == "Bölgelere Göre Satış Dağılımı":
-            fig = plot_pie_chart(df, label_col="Region", value_col="Sales", title="Bölge - Satış")
-            st.pyplot(fig)
-
-        elif secilen_grafik == "Yıllara Göre Satış Dağılımı":
-            fig = plot_pie_chart(df, label_col="Year", value_col="Sales", title="Yıl - Satış")
-            st.pyplot(fig)
-
-        elif secilen_grafik == "Sezonlara Göre Satış Dağılımı":
-            fig = plot_pie_chart(df, label_col="Season", value_col="Sales", title="Sezon - Satış")
-            st.pyplot(fig)
-
-# 3. Görselleştirmeler
-elif menu == "📊 Görselleştirmeler":
-    st.header("📊 Keşifsel Veri Görselleştirme")
-
-    # Grafik seçenekleri
-    grafik_listesi = [
-        "Korelasyon Isı Haritası",
-        "Kategorilere Göre Satış Dağılımı",
-        "Segmentlere Göre Satış Dağılımı",
-        "Bölgelere Göre Satış Dağılımı",
-        "Yıllara Göre Satış Dağılımı",
-        "Sezonlara Göre Satış Dağılımı",
-    ]
-
-    secilen_grafik = st.selectbox("Gösterilecek grafiği seçin:", grafik_listesi)
-
-    if st.button("📈 Grafiği Göster"):
-        if secilen_grafik == "Korelasyon Isı Haritası":
-            plot_correlation(df)
-        elif secilen_grafik == "Kategorilere Göre Satış Dağılımı":
-            plot_pie_chart(df, "Category", "Sales", "Kategori - Satış")
-        elif secilen_grafik == "Segmentlere Göre Satış Dağılımı":
-            plot_pie_chart(df, "Segment", "Sales", "Segment - Satış")
-        elif secilen_grafik == "Bölgelere Göre Satış Dağılımı":
-            plot_pie_chart(df, "Region", "Sales", "Bölge - Satış")
-        elif secilen_grafik == "Yıllara Göre Satış Dağılımı":
-            plot_pie_chart(df, "Year", "Sales", "Yıl - Satış")
-        elif secilen_grafik == "Sezonlara Göre Satış Dağılımı":
-            plot_pie_chart(df, "Season", "Sales", "Sezon - Satış")
 
 
 
