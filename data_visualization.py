@@ -178,6 +178,20 @@ def plot_categorical_violin(df,value_col,target_col="Sales"):
     plt.tight_layout()
     plt.show()
 
+def plot_categorical_violin_for_streamlit(df, value_col, target_col="Sales"):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    fig, ax = plt.subplots(figsize=(20, 8))
+    sns.violinplot(x=value_col, y=target_col, data=df, color="#805886", ax=ax)
+    ax.set_title(f"{value_col} - Sales")
+    ax.set_xlabel(value_col)
+    ax.set_ylabel("Sales")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    return fig
+
 
 
 

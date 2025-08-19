@@ -181,9 +181,9 @@ elif menu == "📊 Görselleştirmeler":
             st.pyplot(fig)
 
         elif secilen_grafik == "🎻 Violin Plot":
-            df_filtered_cols = [col for col in df if df[col].nunique() <= 10 and df[col].dtype.name == ["category","objectS"]]
+            df_filtered_cols = [col for col in df.columns if df[col].nunique() <= 10 and df[col].dtype == "object"]
             for c in df_filtered_cols:
-                fig = plot_categorical_violin(df, c, "Sales")
+                fig = plot_categorical_violin_for_streamlit(df, c, "Sales")
                 st.pyplot(fig)
 
 
