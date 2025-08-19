@@ -186,8 +186,6 @@ elif menu == "📊 Görselleştirmeler":
                 fig = plot_categorical_violin_for_streamlit(df, c, "Sales")
                 st.pyplot(fig)
 
-
-
 # 4.Zaman serisi
 elif menu == "📈 Zaman Serisi Tahminleri":
     st.header("📈 Zaman Serisi Tahminleri")
@@ -222,60 +220,116 @@ elif menu == "📈 Zaman Serisi Tahminleri":
 
     # SARIMA Modeli
     st.subheader("📌 SARIMA Modeli")
-    df_sarima = df.groupby("Order Date")["Sales"].sum().reset_index()
-    df_sarima.set_index("Order Date", inplace=True)
+    
+    try:
+        df_sarima = df.groupby("Order Date")["Sales"].sum().reset_index()
+        df_sarima.set_index("Order Date", inplace=True)
 
-    full_range = pd.date_range(start=df_sarima.index.min(), end=df_sarima.index.max(), freq="D")
-    df_sarima = df_sarima.reindex(full_range)
-    df_sarima.index.name = "Order Date"
-    df_sarima = df_sarima.fillna(0)
+        full_range = pd.date_range(start=df_sarima.index.min(), end=df_sarima.index.max(), freq="D")
+        df_sarima = df_sarima.reindex(full_range)
+        df_sarima.index.name = "Order Date"
+        df_sarima = df_sarima.fillna(0)
 
-    train_size_sarima = int(len(df_sarima) * 0.7)
-    train_sarima = df_sarima[:train_size_sarima]
-    test_sarima = df_sarima[train_size_sarima:]
+        train_size_sarima = int(len(df_sarima) * 0.7)
+        train_sarima = df_sarima[:train_size_sarima]
+        test_sarima = df_sarima[train_size_sarima:]
 
-    from pmdarima import auto_arima
-    stepwise_model = auto_arima(train_sarima["Sales"],
-                                start_p=1, start_q=1,
-                                max_p=3, max_q=3,
-                                d=None,
-                                start_P=0, seasonal=True,
-                                D=1, m=7,
-                                trace=False,
-                                error_action='ignore',
-                                suppress_warnings=True,
-                                stepwise=True)
+        # pmdarima kütüphanesini kontrol et
+        try:
+            from pmdarima import auto_arima
+        except ImportError:
+            st.error("❌ pmdarima kütüphanesi yüklü değil. Lütfen 'pip install pmdarima' komutu ile yükleyin.")
+            st.stop()
 
-    p,d,q = stepwise_model.order
-    P,D,Q,m = stepwise_model.seasonal_order
+        # Spinner ile birlikte auto_arima
+        with st.spinner("SARIMA parametreleri optimize ediliyor... ⏳"):
+            try:
+                stepwise_model = auto_arima(train_sarima["Sales"],
+                                            start_p=1, start_q=1,
+                                            max_p=3, max_q=3,
+                                            d=None,
+                                            start_P=0, seasonal=True,
+                                            D=1, m=7,
+                                            trace=False,
+                                            error_action='ignore',
+                                            suppress_warnings=True,
+                                            stepwise=True)
+                
+                st.success(f"✅ En iyi SARIMA parametreleri bulundu: {stepwise_model.order} x {stepwise_model.seasonal_order}")
+                
+            except Exception as e:
+                st.error(f"❌ Auto ARIMA hatası: {str(e)}")
+                # Fallback parametreler
+                st.warning("⚠️ Varsayılan parametreler kullanılacak...")
+                p, d, q = 1, 1, 1
+                P, D, Q, m = 1, 1, 1, 7
+            else:
+                p, d, q = stepwise_model.order
+                P, D, Q, m = stepwise_model.seasonal_order
 
-    sarima = SARIMAX(endog=train_sarima["Sales"],
-                     order=(p, d, q),
-                     seasonal_order=(P, D, Q, m),
-                     enforce_invertibility=False,
-                     enforce_stationarity=False)
+        # SARIMA modelini fit et
+        with st.spinner("SARIMA modeli eğitiliyor... ⏳"):
+            try:
+                sarima = SARIMAX(endog=train_sarima["Sales"],
+                                 order=(p, d, q),
+                                 seasonal_order=(P, D, Q, m),
+                                 enforce_invertibility=False,
+                                 enforce_stationarity=False)
 
-    with st.spinner("SARIMA modeli eğitiliyor... ⏳"):   
-        results_sarima = sarima.fit()
+                results_sarima = sarima.fit(disp=False)  # disp=False eklendi
+                st.success("✅ SARIMA modeli başarıyla eğitildi!")
+                
+            except Exception as e:
+                st.error(f"❌ SARIMA model eğitim hatası: {str(e)}")
+                st.stop()
 
-    forecast_sarima = results_sarima.get_forecast(7)
-    forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
+        # Tahmin yap
+        try:
+            forecast_sarima = results_sarima.get_forecast(7)
+            forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
 
-    ci = forecast_sarima.conf_int().copy()
-    ci.columns = ["yhat_lower","yhat_upper"]
+            # Güven aralıkları
+            ci = forecast_sarima.conf_int().copy()
+            ci.columns = ["yhat_lower", "yhat_upper"]
+            ci = ci.reindex(forecast_sarima_mean.index)
 
-    # ✅ index eşitleme, fill_between hatası olmasın diye
-    ci = ci.reindex(forecast_sarima_mean.index)
+            # SARIMA Tahmin tablosunu göster
+            st.write("SARIMA Tahmin Tablosu (Gelecek 7 Gün)")
+            forecast_display = forecast_sarima_mean.copy()
+            forecast_display["Tarih"] = forecast_display.index.strftime('%Y-%m-%d')
+            forecast_display = forecast_display[["Tarih", "yhat_sarima"]].round(2)
+            st.dataframe(forecast_display)
 
-    # Çizim
-    fig3, ax = plt.subplots(figsize=(12,6))
-    df_sarima["Sales"].plot(ax=ax, label="Gerçek Satış", color="#61AC80")
-    forecast_sarima_mean["yhat_sarima"].plot(ax=ax, label="SARIMA Tahmin", color="#487D95")
-    ax.fill_between(ci.index, ci["yhat_lower"], ci["yhat_upper"], color="#487D95", alpha=0.2)
+            # Çizim
+            fig3, ax = plt.subplots(figsize=(12, 6))
+            
+            # Son 30 günü göster (çok uzun olmasın diye)
+            recent_data = df_sarima["Sales"].tail(30)
+            recent_data.plot(ax=ax, label="Gerçek Satış", color="#61AC80", linewidth=2)
+            
+            forecast_sarima_mean["yhat_sarima"].plot(ax=ax, label="SARIMA Tahmin", 
+                                                    color="#487D95", linewidth=2, 
+                                                    linestyle='--')
+            
+            # Güven aralığı
+            ax.fill_between(ci.index, ci["yhat_lower"], ci["yhat_upper"], 
+                           color="#487D95", alpha=0.2, label="Güven Aralığı")
 
-    ax.set_title("SARIMA Forecast vs Sales")
-    ax.legend()
-    st.pyplot(fig3)
+            ax.set_title("SARIMA Tahmin Sonuçları", fontsize=14, fontweight='bold')
+            ax.set_xlabel("Tarih", fontsize=12)
+            ax.set_ylabel("Satış", fontsize=12)
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            plt.tight_layout()
+            
+            st.pyplot(fig3)
+
+        except Exception as e:
+            st.error(f"❌ SARIMA tahmin hatası: {str(e)}")
+
+    except Exception as e:
+        st.error(f"❌ SARIMA veri hazırlama hatası: {str(e)}")
+        st.write("Hata detayları:", str(e))
 
 # 5. Regresyon modeli
 elif menu == "📉 Regresyon Modeli":
