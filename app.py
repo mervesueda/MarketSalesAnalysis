@@ -302,29 +302,32 @@ elif menu == "📈 Zaman Serisi Tahminleri":
         ci = forecast_sarima.conf_int().copy() 
         ci.columns = ["yhat_lower", "yhat_upper"]
 
-        # Çizim - TÜM VERİ + 7 GÜNLÜK TAHMİN
+            # Çizim - GERÇEK + TAHMİN (sadece tahmin sonuna kadar)
         fig3, ax = plt.subplots(figsize=(12, 6))
-        
-        # Tüm gerçek satış verilerini çiz
-        df_sarima["Sales"].plot(ax=ax, label="Gerçek Satış", color="#61AC80", linewidth=2)
-        
-        # 7 günlük tahmini çiz
+
+        # Gerçek satışlar (tahmin bitişine kadar)
+        end_date = forecast_sarima_mean.index[-1]
+        df_sarima.loc[:end_date, "Sales"].plot(ax=ax, label="Gerçek Satış", color="#61AC80", linewidth=2)
+
+        # SARIMA tahmini
         forecast_sarima_mean["yhat_sarima"].plot(ax=ax, label="SARIMA Tahmin", 
-                                                color="#487D95", linewidth=2, 
-                                                linestyle='--')
-        
+                                                color="#487D95", linewidth=2, linestyle="--")
+
         # Güven aralığı
         ax.fill_between(ci.index, ci["yhat_lower"], ci["yhat_upper"], 
-                    color="#487D95", alpha=0.2, label="Güven Aralığı")
+                        color="#487D95", alpha=0.2, label="Güven Aralığı")
 
-        ax.set_title("SARIMA Tahmin Sonuçları", fontsize=14, fontweight='bold')
+        # Görsel ayarları
+        ax.set_xlim(df_sarima.index.min(), end_date)   # sadece tahminin bittiği yere kadar göster
+        ax.set_title("SARIMA Tahmin Sonuçları", fontsize=14, fontweight="bold")
         ax.set_xlabel("Tarih", fontsize=12)
         ax.set_ylabel("Satış", fontsize=12)
         ax.legend()
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        
+
         st.pyplot(fig3)
+
 
     except Exception as e:
         st.error(f"❌ SARIMA tahmin hatası: {str(e)}")
