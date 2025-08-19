@@ -98,6 +98,9 @@ elif menu == "📊 Görselleştirmeler":
 
     # Grafik seçenekleri
     grafik_listesi = [
+        "Günlük Satış Trendleri"
+        "Haftalık Satış Trendleri"
+        "Aylık Satış Trendleri"
         "Korelasyon Isı Haritası",
         "Kategorilere Göre Satış Dağılımı",
         "Segmentlere Göre Satış Dağılımı",
@@ -109,7 +112,20 @@ elif menu == "📊 Görselleştirmeler":
     secilen_grafik = st.selectbox("Gösterilecek grafiği seçin:", grafik_listesi)
 
     if st.button("📈 Grafiği Göster"):
-        if secilen_grafik == "Korelasyon Isı Haritası":
+        if secilen_grafik == "Günlük Satış Trendleri":
+            fig=plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="D", title="Günlük Satış Trendleri", color="#4F81BD")
+            st.pyplot(fig)
+
+        elif secilen_grafik == "Haftalık Satış Trendleri":
+            fig=plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="W", title="Haftalık Satış Trendleri", color="#6B8F81")
+            st.pyplot(fig)
+
+        elif secilen_grafik == "Aylık Satış Trendleri":
+            fig=plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="M", title="Alyık Satış Trendleri", color="#7B17CE")
+            st.pyplot(fig)
+
+
+        elif secilen_grafik == "Korelasyon Isı Haritası":
             fig = plot_correlation(df)   # fonksiyon fig return etmeli
             st.pyplot(fig)
 
