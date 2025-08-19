@@ -91,187 +91,100 @@ elif menu == "🔧 Ön İşleme":
                 st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
 
 
-"""# Grafik seçenekleri
-grafik_listesi = [
-    "Günlük Satış Trendleri",
-    "Haftalık Satış Trendleri",
-    "Aylık Satış Trendleri",
-    "Korelasyon Isı Haritası",
-    "Kategorilere Göre Satış Dağılımı",
-    "Segmentlere Göre Satış Dağılımı",
-    "Bölgelere Göre Satış Dağılımı",
-    "Yıllara Göre Satış Dağılımı",
-    "Sezonlara Göre Satış Dağılımı",
-    "Alt Kategori Bazında Aylık Satış Dağılımı",
-    "En Çok Satış Yapan 10 Şehir",
-    "En Çok Satılan 10 Ürün",
-    "KDE Grafikleri",
-    "Lag Features ve MA Değişkenini Gösteren Grafik",
-    "Violin Plot"
-]
+elif menu == "📊 Görselleştirmeler":
+    st.header("📊 Keşifsel Veri Görselleştirme")
 
-secilen_grafik = st.selectbox("Gösterilecek grafiği seçin:", grafik_listesi)
+    # Grafik seçenekleri (kategoriye göre ayrıldı)
+    trend_grafikleri = [
+        "📈 Günlük Satış Trendleri",
+        "📉 Haftalık Satış Trendleri",
+        "📊 Aylık Satış Trendleri",
+        "🔗 Lag Features ve MA Değişkenini Gösteren Grafik"
+    ]
 
-if st.button("📈 Grafiği Göster"):
-    if secilen_grafik == "Günlük Satış Trendleri":
-        fig = plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="D", title="Günlük Satış Trendleri", color="#4F81BD")
-        st.pyplot(fig)
+    dagilim_grafikleri = [
+        "🔥 Korelasyon Isı Haritası",
+        "🥧 Kategorilere Göre Satış Dağılımı",
+        "🥧 Segmentlere Göre Satış Dağılımı",
+        "🥧 Bölgelere Göre Satış Dağılımı",
+        "🥧 Yıllara Göre Satış Dağılımı",
+        "🥧 Sezonlara Göre Satış Dağılımı",
+        "📊 Alt Kategori Bazında Aylık Satış Dağılımı",
+        "🏙️ En Çok Satış Yapan 10 Şehir",
+        "📦 En Çok Satılan 10 Ürün",
+        "🎻 Violin Plot",
+        "📊 KDE Grafiği"
+    ]
 
-    elif secilen_grafik == "Haftalık Satış Trendleri":
-        fig = plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="W", title="Haftalık Satış Trendleri", color="#6B8F81")
-        st.pyplot(fig)
+    kategori = st.radio("Grafik kategorisini seçin:", ["📈 Trend Grafikleri", "📊 Dağılım Grafikleri"])
 
-    elif secilen_grafik == "Aylık Satış Trendleri":
-        fig = plot_sales_trend(df, date_col="Order Date", value_col="Sales", freq="M", title="Aylık Satış Trendleri", color="#7B17CE")
-        st.pyplot(fig)
+    if kategori == "📈 Trend Grafikleri":
+        secilen_grafik = st.selectbox("Trend grafiğini seçin:", trend_grafikleri)
+    else:
+        secilen_grafik = st.selectbox("Dağılım grafiğini seçin:", dagilim_grafikleri)
 
-    elif secilen_grafik == "Korelasyon Isı Haritası":
-        fig = plot_correlation(df)
-        st.pyplot(fig)
+    if st.button("📊 Grafiği Göster"):
+        if secilen_grafik == "📈 Günlük Satış Trendleri":
+            fig = plot_sales_trend(df, "Order Date", "Sales", "D", "Günlük Satış Trendleri", "#4F81BD")
+            st.pyplot(fig)
 
-    elif secilen_grafik == "Kategorilere Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Category", "Sales", "Kategori - Satış")
-        st.pyplot(fig)
+        elif secilen_grafik == "📉 Haftalık Satış Trendleri":
+            fig = plot_sales_trend(df, "Order Date", "Sales", "W", "Haftalık Satış Trendleri", "#6B8F81")
+            st.pyplot(fig)
 
-    elif secilen_grafik == "Segmentlere Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Segment", "Sales", "Segment - Satış")
-        st.pyplot(fig)
+        elif secilen_grafik == "📊 Aylık Satış Trendleri":
+            fig = plot_sales_trend(df, "Order Date", "Sales", "M", "Aylık Satış Trendleri", "#7B17CE")
+            st.pyplot(fig)
 
-    elif secilen_grafik == "Bölgelere Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Region", "Sales", "Bölge - Satış")
-        st.pyplot(fig)
+        elif secilen_grafik == "🔥 Korelasyon Isı Haritası":
+            fig = plot_correlation(df)
+            st.pyplot(fig)
 
-    elif secilen_grafik == "Yıllara Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Year", "Sales", "Yıl - Satış")
-        st.pyplot(fig)
+        elif secilen_grafik == "🥧 Kategorilere Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, "Category", "Sales", "Kategori - Satış")
+            st.pyplot(fig)
 
-    elif secilen_grafik == "Sezonlara Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Season", "Sales", "Sezon - Satış")
-        st.pyplot(fig)
+        elif secilen_grafik == "🥧 Segmentlere Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, "Segment", "Sales", "Segment - Satış")
+            st.pyplot(fig)
 
-    elif secilen_grafik == "Alt Kategori Bazında Aylık Satış Dağılımı":
-        fig = plot_subcategory_trend(df)
-        st.pyplot(fig)
+        elif secilen_grafik == "🥧 Bölgelere Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, "Region", "Sales", "Bölge - Satış")
+            st.pyplot(fig)
 
-    elif secilen_grafik == "En Çok Satış Yapan 10 Şehir":
-        fig = plot_top_cities(df, top_n=10)
-        st.pyplot(fig)
+        elif secilen_grafik == "🥧 Yıllara Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, "Year", "Sales", "Yıl - Satış")
+            st.pyplot(fig)
 
-    elif secilen_grafik == "En Çok Satılan 10 Ürün":
-        fig = plot_top_products(df, top_n=10)
-        st.pyplot(fig)
+        elif secilen_grafik == "🥧 Sezonlara Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, "Season", "Sales", "Sezon - Satış")
+            st.pyplot(fig)
 
-    elif secilen_grafik == "KDE Grafikleri":
-        fig = plot_sales_kde(df)
-        st.pyplot(fig)
+        elif secilen_grafik == "📊 Alt Kategori Bazında Aylık Satış Dağılımı":
+            fig = plot_subcategory_trend(df)
+            st.pyplot(fig)
 
-    elif secilen_grafik == "Lag Features ve MA Değişkenini Gösteren Grafik":
-        fig = plot_lag_and_ma(df)
-        st.pyplot(fig)
+        elif secilen_grafik == "🏙️ En Çok Satış Yapan 10 Şehir":
+            fig = plot_top_cities(df, top_n=10)
+            st.pyplot(fig)
 
-    elif secilen_grafik == "Violin Plot":
-        df_filtered_cols=[col for col in df if df[col].nunique()<=10 and df[col].dtype.name=="category"]
-        for c in df_filtered_cols:
-            fig=plot_categorical_violin(df,c,"Sales")
-            st.pyplot(fig)"""
-    
-# 📊 Grafik Seçenekleri (emoji + kategori ayrımı)
-grafik_listesi = [
-    "📈 Günlük Satış Trendleri",
-    "📈 Haftalık Satış Trendleri",
-    "📈 Aylık Satış Trendleri",
+        elif secilen_grafik == "📦 En Çok Satılan 10 Ürün":
+            fig = plot_top_products(df, top_n=10)
+            st.pyplot(fig)
 
-    "🥧 Kategorilere Göre Satış Dağılımı",
-    "🥧 Segmentlere Göre Satış Dağılımı",
-    "🥧 Bölgelere Göre Satış Dağılımı",
-    "🥧 Yıllara Göre Satış Dağılımı",
-    "🥧 Sezonlara Göre Satış Dağılımı",
+        elif secilen_grafik == "📊 KDE Grafiği":
+            fig = plot_sales_kde(df)
+            st.pyplot(fig)
 
-    "📊 Korelasyon Isı Haritası",
-    "📊 Alt Kategori Bazında Aylık Satış Dağılımı",
-    "📊 En Çok Satış Yapan 10 Şehir",
-    "📊 En Çok Satılan 10 Ürün",
-    "📊 KDE Grafikleri",
-    "📊 Lag Features ve MA Değişkenini Gösteren Grafik",
-    "📊 Violin Plot"
-]
+        elif secilen_grafik == "🔗 Lag Features ve MA Değişkenini Gösteren Grafik":
+            fig = plot_lag_and_ma(df)
+            st.pyplot(fig)
 
-secilen_grafik = st.selectbox("📊 Gösterilecek grafiği seçin:", grafik_listesi)
-
-if st.button("📈 Grafiği Göster"):
-
-    # ----------------- TREND GRAFİKLERİ -----------------
-    if secilen_grafik == "📈 Günlük Satış Trendleri":
-        fig = plot_sales_trend(df, "Order Date", "Sales", "D", "Günlük Satış Trendleri", "#4F81BD")
-        st.pyplot(fig)
-
-    elif secilen_grafik == "📈 Haftalık Satış Trendleri":
-        fig = plot_sales_trend(df, "Order Date", "Sales", "W", "Haftalık Satış Trendleri", "#6B8F81")
-        st.pyplot(fig)
-
-    elif secilen_grafik == "📈 Aylık Satış Trendleri":
-        fig = plot_sales_trend(df, "Order Date", "Sales", "M", "Aylık Satış Trendleri", "#7B17CE")
-        st.pyplot(fig)
-
-    # ----------------- DAĞILIM GRAFİKLERİ -----------------
-    elif secilen_grafik == "🥧 Kategorilere Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Category", "Sales", "Kategori - Satış")
-        st.pyplot(fig)
-
-    elif secilen_grafik == "🥧 Segmentlere Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Segment", "Sales", "Segment - Satış")
-        st.pyplot(fig)
-
-    elif secilen_grafik == "🥧 Bölgelere Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Region", "Sales", "Bölge - Satış")
-        st.pyplot(fig)
-
-    elif secilen_grafik == "🥧 Yıllara Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Year", "Sales", "Yıl - Satış")
-        st.pyplot(fig)
-
-    elif secilen_grafik == "🥧 Sezonlara Göre Satış Dağılımı":
-        fig = plot_pie_chart(df, "Season", "Sales", "Sezon - Satış")
-        st.pyplot(fig)
-
-    # ----------------- DİĞER GRAFİKLER -----------------
-    elif secilen_grafik == "📊 Korelasyon Isı Haritası":
-        fig = plot_correlation(df)
-        st.pyplot(fig)
-
-    elif secilen_grafik == "📊 Alt Kategori Bazında Aylık Satış Dağılımı":
-        fig = plot_subcategory_trend(df)
-        st.pyplot(fig)
-
-    elif secilen_grafik == "📊 En Çok Satış Yapan 10 Şehir":
-        fig = plot_top_cities(df, top_n=10)
-        st.pyplot(fig)
-
-    elif secilen_grafik == "📊 En Çok Satılan 10 Ürün":
-        fig = plot_top_products(df, top_n=10)
-        st.pyplot(fig)
-
-    elif secilen_grafik == "📊 KDE Grafikleri":
-        fig = plot_sales_kde(df)
-        st.pyplot(fig)
-
-    elif secilen_grafik == "📊 Lag Features ve MA Değişkenini Gösteren Grafik":
-        fig = plot_lag_and_ma(df)
-        st.pyplot(fig)
-
-    elif secilen_grafik == "📊 Violin Plot":
-        # Sadece az kategoriye sahip sütunlarda violin çizelim
-        df_filtered_cols = [
-            col for col in df.columns
-            if df[col].nunique() <= 10 and (df[col].dtype == "object" or str(df[col].dtype).startswith("category"))
-        ]
-        if not df_filtered_cols:
-            st.warning("⚠️ Violin plot için uygun kategorik sütun bulunamadı.")
-        else:
+        elif secilen_grafik == "🎻 Violin Plot":
+            df_filtered_cols = [col for col in df if df[col].nunique() <= 10 and df[col].dtype.name == ["category","objectS"]]
             for c in df_filtered_cols:
                 fig = plot_categorical_violin(df, c, "Sales")
                 st.pyplot(fig)
-
 
 
 
