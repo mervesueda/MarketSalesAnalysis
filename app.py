@@ -38,7 +38,7 @@ df = get_data()
 # Sidebar Menü
 menu = st.sidebar.radio(
     "Menü Seçin",
-    ["📂 Veri Önizleme", "🔧 Ön İşleme", "📊 Görselleştirmeler", "📈 Zaman Serisi Tahminleri", "📉 Regresyon Modeli", "⚖️ Model Karşılaştırma"]
+    ["📂 Veri Önizleme", "🔧 Ön İşleme", "📊 Görselleştirmeler", "📈 Zaman Serisi Tahminleri", "📉 Regresyon Modeli"]
 )
 
 st.sidebar.markdown("---")
@@ -255,62 +255,27 @@ elif menu == "📈 Zaman Serisi Tahminleri":
                      enforce_invertibility=False,
                      enforce_stationarity=False)
 
-    results_sarima = sarima.fit()
+    with st.spinner("SARIMA modeli eğitiliyor... ⏳"):   
+        results_sarima = sarima.fit()
+
     forecast_sarima = results_sarima.get_forecast(7)
     forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
 
     ci = forecast_sarima.conf_int().copy()
     ci.columns = ["yhat_lower","yhat_upper"]
-    forecast_sarima_mean.index = test_sarima.index[:7]
-    ci.index = test_sarima.index[:7]
+
+    # ✅ index eşitleme, fill_between hatası olmasın diye
+    ci = ci.reindex(forecast_sarima_mean.index)
 
     # Çizim
     fig3, ax = plt.subplots(figsize=(12,6))
     df_sarima["Sales"].plot(ax=ax, label="Gerçek Satış", color="#61AC80")
-    forecast_sarima.predicted_mean.plot(ax=ax, label="SARIMA Tahmin", color="#487D95")
-    ax.fill_between(ci.index,
-                    ci.iloc[:, 0],
-                    ci.iloc[:, 1],
-                    color="#487D95", alpha=0.2)
-    plt.title("SARIMA Forecast vs Sales")
-    plt.legend()
+    forecast_sarima_mean["yhat_sarima"].plot(ax=ax, label="SARIMA Tahmin", color="#487D95")
+    ax.fill_between(ci.index, ci["yhat_lower"], ci["yhat_upper"], color="#487D95", alpha=0.2)
+
+    ax.set_title("SARIMA Forecast vs Sales")
+    ax.legend()
     st.pyplot(fig3)
-
-
- # Zaman serisi metrikleri
-    st.subheader("📊 Model Performans Metrikleri (7 Günlük)")
-
-    # Prophet metrikleri
-    steps = 7
-    y_true7 = test_prophet.set_index("ds")["y"].iloc[:steps]
-    y_pred7 = forecast_prophet.set_index("ds")["yhat"].loc[
-        y_true7.index.intersection(forecast_prophet["ds"])
-    ]
-    y_pred_prophet = y_pred7.reindex(y_true7.index).dropna()
-    y_true_prophet = y_true7.loc[y_pred7.index]
-
-    # SARIMA metrikleri
-    y_true_sarima = test_sarima["Sales"].iloc[:7]
-    y_pred_sarima = forecast_sarima.predicted_mean
-    y_pred_sarima.index = y_true_sarima.index
-
-    rmse_prophet = np.sqrt(mean_squared_error(y_true_prophet, y_pred_prophet))
-    rmse_sarima = np.sqrt(mean_squared_error(y_true_sarima, y_pred_sarima))
-
-    smape_prophet = smape(y_true_prophet, y_pred_prophet)
-    smape_sarima = smape(y_true_sarima, y_pred_sarima)
-
-    r2_prophet = r2_score(y_true_prophet, y_pred_prophet)
-    r2_sarima = r2_score(y_true_sarima, y_pred_sarima)
-
-    # Streamlit tablosu
-    metrics_df = pd.DataFrame({
-        "Model": ["Prophet", "SARIMA"],
-        "RMSE": [rmse_prophet, rmse_sarima],
-        "SMAPE": [smape_prophet, smape_sarima],
-        "R2": [r2_prophet, r2_sarima]
-    })
-    st.dataframe(metrics_df)
 
 # 5. Regresyon modeli
 elif menu == "📉 Regresyon Modeli":
