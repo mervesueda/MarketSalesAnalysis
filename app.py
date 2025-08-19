@@ -332,7 +332,39 @@ elif menu == "📈 Zaman Serisi Tahminleri":
     except Exception as e:
         st.error(f"❌ SARIMA tahmin hatası: {str(e)}")
 
+    st.subheader("📊 Model Performans Metrikleri (7 Günlük)")
 
+    # Prophet metrikleri
+    steps = 7
+    y_true7 = test_prophet.set_index("ds")["y"].iloc[:steps]
+    y_pred7 = forecast_prophet.set_index("ds")["yhat"].loc[
+        y_true7.index.intersection(forecast_prophet["ds"])
+    ]
+    y_pred_prophet = y_pred7.reindex(y_true7.index).dropna()
+    y_true_prophet = y_true7.loc[y_pred7.index]
+
+    # SARIMA metrikleri
+    y_true_sarima = test_sarima["Sales"].iloc[:7]
+    y_pred_sarima = forecast_sarima.predicted_mean
+    y_pred_sarima.index = y_true_sarima.index
+
+    rmse_prophet = np.sqrt(mean_squared_error(y_true_prophet, y_pred_prophet))
+    rmse_sarima = np.sqrt(mean_squared_error(y_true_sarima, y_pred_sarima))
+
+    smape_prophet = smape(y_true_prophet, y_pred_prophet)
+    smape_sarima = smape(y_true_sarima, y_pred_sarima)
+
+    r2_prophet = r2_score(y_true_prophet, y_pred_prophet)
+    r2_sarima = r2_score(y_true_sarima, y_pred_sarima)
+
+    # Streamlit tablosu
+    metrics_df = pd.DataFrame({
+        "Model": ["Prophet", "SARIMA"],
+        "RMSE": [rmse_prophet, rmse_sarima],
+        "SMAPE": [smape_prophet, smape_sarima],
+        "R2": [r2_prophet, r2_sarima]
+    })
+    st.dataframe(metrics_df)
 
 # 5. Regresyon modeli
 elif menu == "📉 Regresyon Modeli":
@@ -371,6 +403,9 @@ elif menu == "📉 Regresyon Modeli":
 
     except Exception as e:
         st.error(f"Regresyon modeli çalıştırılırken hata oluştu: {e}")
+
+
+
 
 
  
