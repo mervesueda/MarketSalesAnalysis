@@ -68,24 +68,19 @@ elif menu == "🔧 Ön İşleme":
                 my_bar.progress(percent_complete, text=progress_text)
 
             try:
-                df_clean, steps = preprocess_data(df)   # ✅ iki değer yakala
+                df_clean, steps = preprocess_data(df)
 
                 # 📌 Eksik Postal Code satırlarını sil
-                before_rows = df_clean.shape[0]
                 df_clean = df_clean.dropna(subset=["Postal Code"])
-                after_rows = df_clean.shape[0]
-                removed_rows = before_rows - after_rows
+
+                # 🔑 Session State'e kaydet
+                st.session_state.df_clean = df_clean
 
                 st.success("✅ Veri ön işleme tamamlandı!")
                 st.subheader("İşlenmiş Veri Önizleme")
                 st.dataframe(df_clean.head())
 
-                # Kullanıcıya bilgi ver
-                if removed_rows > 0:
-                    st.info(f"📌 {removed_rows} satır 'Postal Code' eksik olduğu için silindi. "
-                            f"Kalan satır sayısı: {after_rows}")
-
-                # Yapılan işlemleri göster
+                # Yapılan işlemler
                 st.subheader("🔎 Yapılan İşlemler")
                 for step in steps:
                     st.write("•", step)
@@ -102,6 +97,48 @@ elif menu == "🔧 Ön İşleme":
 
             except Exception:
                 st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
+# 2.Ön işleme
+elif menu == "🔧 Ön İşleme":
+    if st.button("🚀 Veri Ön İşlemeyi Başlat"):
+        with st.spinner("Veri ön işleme başlatılıyor..."):
+            progress_text = "Veri ön işleniyor..."
+            my_bar = st.progress(0, text=progress_text)
+
+            for percent_complete in range(0, 101, 20):
+                time.sleep(0.5)
+                my_bar.progress(percent_complete, text=progress_text)
+
+            try:
+                df_clean, steps = preprocess_data(df)
+
+                # 📌 Eksik Postal Code satırlarını sil
+                df_clean = df_clean.dropna(subset=["Postal Code"])
+
+                # 🔑 Session State'e kaydet
+                st.session_state.df_clean = df_clean
+
+                st.success("✅ Veri ön işleme tamamlandı!")
+                st.subheader("İşlenmiş Veri Önizleme")
+                st.dataframe(df_clean.head())
+
+                # Yapılan işlemler
+                st.subheader("🔎 Yapılan İşlemler")
+                for step in steps:
+                    st.write("•", step)
+                st.write("• Eksik 'Postal Code' satırları silindi")
+
+                # İndirme seçeneği
+                csv = df_clean.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="📥 İşlenmiş Veriyi İndir",
+                    data=csv,
+                    file_name="clean_data.csv",
+                    mime="text/csv"
+                )
+
+            except Exception:
+                st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
+
 
 
 
@@ -388,9 +425,12 @@ elif menu == "📉 Regresyon Modeli":
         from sklearn.model_selection import train_test_split
         from sklearn.linear_model import LinearRegression
 
+        # Eğer df_clean oluşturulmadıysa fallback olarak df kullan
+        df_reg = st.session_state.get("df_clean", df.dropna(subset=["Postal Code"]))
+
         # Özellikler ve hedef değişken
-        X = df[["Postal Code"]]   # Burada ister başka kolonlar da ekleyebilirsin
-        y = df["Sales"]
+        X = df_reg[["Postal Code"]]
+        y = df_reg["Sales"]
 
         # Eğitim / test ayrımı
         X_train, X_test, y_train, y_test = train_test_split(
@@ -408,9 +448,9 @@ elif menu == "📉 Regresyon Modeli":
         metrics = {
             "MAE": mean_absolute_error(y_test, y_pred),
             "MSE": mean_squared_error(y_test, y_pred),
-            "RMSE": root_mean_squared_error(y_test, y_pred),  # model_metrics.py'den
+            "RMSE": root_mean_squared_error(y_test, y_pred),
             "R2": r2_score(y_test, y_pred),
-            "SMAPE": smape(y_test, y_pred)                   # model_metrics.py'den
+            "SMAPE": smape(y_test, y_pred)
         }
 
         # Sonuçların tablo halinde gösterilmesi
