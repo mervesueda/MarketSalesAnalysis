@@ -366,50 +366,43 @@ elif menu == "📈 Zaman Serisi Tahminleri":
     })
     st.dataframe(metrics_df)
 
-# 5. Regresyon modeli
+# 5. Regresyon modeli 
 elif menu == "📉 Regresyon Modeli":
     st.header("📉 Regresyon Modeli Performansı")
 
     try:
-        result = train_regression_model(df)
+        from sklearn.model_selection import train_test_split
+        from sklearn.linear_model import LinearRegression
 
-        # Eğer fonksiyon dict döndürüyorsa doğrudan al
-        if isinstance(result, dict):
-            metrics = result
-        else:
-            from sklearn.model_selection import train_test_split
-            from sklearn.linear_model import LinearRegression
+        # Özellikler ve hedef değişken
+        X = df[["Postal Code"]]   # Burada ister başka kolonlar da ekleyebilirsin
+        y = df["Sales"]
 
-            X = df[["Postal Code"]]
-            y = df["Sales"]
+        # Eğitim / test ayrımı
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
 
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Model kurulumu ve eğitimi
+        model = LinearRegression()
+        model.fit(X_train, y_train)
 
-            model = LinearRegression()
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
+        # Tahmin
+        y_pred = model.predict(X_test)
 
-            metrics = {
-                "MAE": mean_absolute_error(y_test, y_pred),
-                "MSE": mean_squared_error(y_test, y_pred),
-                "RMSE": root_mean_squared_error(y_test, y_pred),  # model_metrics.py'den
-                "R2": r2_score(y_test, y_pred),
-                "SMAPE": smape(y_test, y_pred)                   # model_metrics.py'den
-            }
+        # Metrikler
+        metrics = {
+            "MAE": mean_absolute_error(y_test, y_pred),
+            "MSE": mean_squared_error(y_test, y_pred),
+            "RMSE": root_mean_squared_error(y_test, y_pred),  # model_metrics.py'den
+            "R2": r2_score(y_test, y_pred),
+            "SMAPE": smape(y_test, y_pred)                   # model_metrics.py'den
+        }
 
+        # Sonuçların tablo halinde gösterilmesi
         st.subheader("🔎 Regresyon Modeli Metrikleri")
         metrics_df = pd.DataFrame([metrics])
         st.dataframe(metrics_df)
 
     except Exception as e:
         st.error(f"Regresyon modeli çalıştırılırken hata oluştu: {e}")
-
-
-
-
-
- 
-        
-
-
-
