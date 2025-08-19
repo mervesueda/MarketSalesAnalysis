@@ -186,126 +186,131 @@ elif menu == "📊 Görselleştirmeler":
                 fig = plot_categorical_violin_for_streamlit(df, c, "Sales")
                 st.pyplot(fig)
 
-from statsmodels.tsa.statespace.sarimax import SARIMAX
 
-st.subheader("📌 SARIMA Modeli")
 
-df_sarima = df.groupby("Order Date")["Sales"].sum().reset_index()
-df_sarima.set_index("Order Date", inplace=True)
+# 4.Zaman serisi
+elif menu == "📈 Zaman Serisi Tahminleri":
+    st.header("📈 Zaman Serisi Tahminleri")
 
-full_range = pd.date_range(start=df_sarima.index.min(), end=df_sarima.index.max(), freq="D")
-df_sarima = df_sarima.reindex(full_range)
-df_sarima.index.name = "Order Date"
-df_sarima = df_sarima.fillna(0)
+    # Prophet Zaman Serisi Modeli
+    st.subheader("📌 Prophet Modeli")
+    df["Order Date"] = pd.to_datetime(df["Order Date"], dayfirst=True, errors="coerce")
+    df_prophet = df.groupby("Order Date")["Sales"].sum().reset_index()
+    df_prophet.columns = ["ds", "y"]
 
-train_size_sarima = int(len(df_sarima) * 0.7)
-train_sarima = df_sarima[:train_size_sarima]
-test_sarima = df_sarima[train_size_sarima:]
+    train_size_prophet = int(len(df_prophet) * 0.7)
+    train_prophet = df_prophet[:train_size_prophet]
+    test_prophet = df_prophet[train_size_prophet:]
 
-from pmdarima import auto_arima
-stepwise_model = auto_arima(train_sarima["Sales"],
-                            start_p=1, start_q=1,
-                            max_p=3, max_q=3,
-                            d=None,
-                            start_P=0, seasonal=True,
-                            D=1, m=7,
-                            trace=False,
-                            error_action='ignore',
-                            suppress_warnings=True,
-                            stepwise=True)
+    prophet = Prophet()
+    prophet.fit(train_prophet)
 
-p,d,q = stepwise_model.order
-P,D,Q,m = stepwise_model.seasonal_order
+    future_prophet = prophet.make_future_dataframe(periods=7, freq="D")
+    forecast_prophet = prophet.predict(future_prophet)
 
-sarima = SARIMAX(endog=train_sarima["Sales"],
-                 order=(p, d, q),
-                 seasonal_order=(P, D, Q, m),
-                 enforce_invertibility=False,
-                 enforce_stationarity=False)
+    st.write("Prophet Tahmin Tablosu (Son 7 Gün)")
+    st.dataframe(forecast_prophet[["ds","yhat","yhat_lower","yhat_upper"]].tail(7))
 
-with st.spinner("SARIMA modeli eğitiliyor... ⏳"):
+    fig1 = prophet.plot(forecast_prophet)
+    plt.title("Prophet Tahmin Sonuçları")
+    plt.xlabel("Tarih")
+    plt.ylabel("Satış")
+    st.pyplot(fig1)
+
+    fig2 = prophet.plot_components(forecast_prophet)
+    st.pyplot(fig2)
+
+    # SARIMA Modeli
+    st.subheader("📌 SARIMA Modeli")
+    df_sarima = df.groupby("Order Date")["Sales"].sum().reset_index()
+    df_sarima.set_index("Order Date", inplace=True)
+
+    full_range = pd.date_range(start=df_sarima.index.min(), end=df_sarima.index.max(), freq="D")
+    df_sarima = df_sarima.reindex(full_range)
+    df_sarima.index.name = "Order Date"
+    df_sarima = df_sarima.fillna(0)
+
+    train_size_sarima = int(len(df_sarima) * 0.7)
+    train_sarima = df_sarima[:train_size_sarima]
+    test_sarima = df_sarima[train_size_sarima:]
+
+    from pmdarima import auto_arima
+    stepwise_model = auto_arima(train_sarima["Sales"],
+                                start_p=1, start_q=1,
+                                max_p=3, max_q=3,
+                                d=None,
+                                start_P=0, seasonal=True,
+                                D=1, m=7,
+                                trace=False,
+                                error_action='ignore',
+                                suppress_warnings=True,
+                                stepwise=True)
+
+    p,d,q = stepwise_model.order
+    P,D,Q,m = stepwise_model.seasonal_order
+
+    sarima = SARIMAX(endog=train_sarima["Sales"],
+                     order=(p, d, q),
+                     seasonal_order=(P, D, Q, m),
+                     enforce_invertibility=False,
+                     enforce_stationarity=False)
+
     results_sarima = sarima.fit()
+    forecast_sarima = results_sarima.get_forecast(7)
+    forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
 
-forecast_sarima = results_sarima.get_forecast(7)
-forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
+    ci = forecast_sarima.conf_int().copy()
+    ci.columns = ["yhat_lower","yhat_upper"]
+    forecast_sarima_mean.index = test_sarima.index[:7]
+    ci.index = test_sarima.index[:7]
 
-ci = forecast_sarima.conf_int().copy()
-ci.columns = ["yhat_lower","yhat_upper"]
-forecast_sarima_mean.index = test_sarima.index[:7]
-ci.index = test_sarima.index[:7]
-
-# Çizim
-fig3, ax = plt.subplots(figsize=(12,6))
-df_sarima["Sales"].plot(ax=ax, label="Gerçek Satış", color="#61AC80")
-forecast_sarima.predicted_mean.plot(ax=ax, label="SARIMA Tahmin", color="#487D95")
-ax.fill_between(ci.index, ci["yhat_lower"], ci["yhat_upper"], color="#487D95", alpha=0.2)
-
-ax.set_xlim(df_sarima.index.min(), ci.index[-1])
-ax.set_title("SARIMA Forecast vs Sales")
-ax.legend()
-
-st.pyplot(fig3)
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-
-st.subheader("📌 SARIMA Modeli")
-
-df_sarima = df.groupby("Order Date")["Sales"].sum().reset_index()
-df_sarima.set_index("Order Date", inplace=True)
-
-full_range = pd.date_range(start=df_sarima.index.min(), end=df_sarima.index.max(), freq="D")
-df_sarima = df_sarima.reindex(full_range)
-df_sarima.index.name = "Order Date"
-df_sarima = df_sarima.fillna(0)
-
-train_size_sarima = int(len(df_sarima) * 0.7)
-train_sarima = df_sarima[:train_size_sarima]
-test_sarima = df_sarima[train_size_sarima:]
-
-from pmdarima import auto_arima
-stepwise_model = auto_arima(train_sarima["Sales"],
-                            start_p=1, start_q=1,
-                            max_p=3, max_q=3,
-                            d=None,
-                            start_P=0, seasonal=True,
-                            D=1, m=7,
-                            trace=False,
-                            error_action='ignore',
-                            suppress_warnings=True,
-                            stepwise=True)
-
-p,d,q = stepwise_model.order
-P,D,Q,m = stepwise_model.seasonal_order
-
-sarima = SARIMAX(endog=train_sarima["Sales"],
-                 order=(p, d, q),
-                 seasonal_order=(P, D, Q, m),
-                 enforce_invertibility=False,
-                 enforce_stationarity=False)
-
-with st.spinner("SARIMA modeli eğitiliyor... ⏳"):
-    results_sarima = sarima.fit()
-
-forecast_sarima = results_sarima.get_forecast(7)
-forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
-
-ci = forecast_sarima.conf_int().copy()
-ci.columns = ["yhat_lower","yhat_upper"]
-forecast_sarima_mean.index = test_sarima.index[:7]
-ci.index = test_sarima.index[:7]
-
-# Çizim
-fig3, ax = plt.subplots(figsize=(12,6))
-df_sarima["Sales"].plot(ax=ax, label="Gerçek Satış", color="#61AC80")
-forecast_sarima.predicted_mean.plot(ax=ax, label="SARIMA Tahmin", color="#487D95")
-ax.fill_between(ci.index, ci["yhat_lower"], ci["yhat_upper"], color="#487D95", alpha=0.2)
-
-ax.set_xlim(df_sarima.index.min(), ci.index[-1])
-ax.set_title("SARIMA Forecast vs Sales")
-ax.legend()
-
-st.pyplot(fig3)
+    # Çizim
+    fig3, ax = plt.subplots(figsize=(12,6))
+    df_sarima["Sales"].plot(ax=ax, label="Gerçek Satış", color="#61AC80")
+    forecast_sarima.predicted_mean.plot(ax=ax, label="SARIMA Tahmin", color="#487D95")
+    ax.fill_between(ci.index,
+                    ci.iloc[:, 0],
+                    ci.iloc[:, 1],
+                    color="#487D95", alpha=0.2)
+    plt.title("SARIMA Forecast vs Sales")
+    plt.legend()
+    st.pyplot(fig3)
 
 
+ # Zaman serisi metrikleri
+    st.subheader("📊 Model Performans Metrikleri (7 Günlük)")
+
+    # Prophet metrikleri
+    steps = 7
+    y_true7 = test_prophet.set_index("ds")["y"].iloc[:steps]
+    y_pred7 = forecast_prophet.set_index("ds")["yhat"].loc[
+        y_true7.index.intersection(forecast_prophet["ds"])
+    ]
+    y_pred_prophet = y_pred7.reindex(y_true7.index).dropna()
+    y_true_prophet = y_true7.loc[y_pred7.index]
+
+    # SARIMA metrikleri
+    y_true_sarima = test_sarima["Sales"].iloc[:7]
+    y_pred_sarima = forecast_sarima.predicted_mean
+    y_pred_sarima.index = y_true_sarima.index
+
+    rmse_prophet = np.sqrt(mean_squared_error(y_true_prophet, y_pred_prophet))
+    rmse_sarima = np.sqrt(mean_squared_error(y_true_sarima, y_pred_sarima))
+
+    smape_prophet = smape(y_true_prophet, y_pred_prophet)
+    smape_sarima = smape(y_true_sarima, y_pred_sarima)
+
+    r2_prophet = r2_score(y_true_prophet, y_pred_prophet)
+    r2_sarima = r2_score(y_true_sarima, y_pred_sarima)
+
+    # Streamlit tablosu
+    metrics_df = pd.DataFrame({
+        "Model": ["Prophet", "SARIMA"],
+        "RMSE": [rmse_prophet, rmse_sarima],
+        "SMAPE": [smape_prophet, smape_sarima],
+        "R2": [r2_prophet, r2_sarima]
+    })
+    st.dataframe(metrics_df)
 
 # 5. Regresyon modeli
 elif menu == "📉 Regresyon Modeli":
