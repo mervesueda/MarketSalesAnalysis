@@ -68,15 +68,31 @@ elif menu == "🔧 Ön İşleme":
                 my_bar.progress(percent_complete, text=progress_text)
 
             try:
-                df_clean, steps = preprocess_data(df)   # ✅ iki değer yakala
+                df_clean, steps = preprocess_data(df)
+
+                # 📌 Eksik Postal Code satırlarını sil
+                before_rows = df_clean.shape[0]
+                df_clean = df_clean.dropna(subset=["Postal Code"])
+                after_rows = df_clean.shape[0]
+                removed_rows = before_rows - after_rows
+
+                # 🔑 Session State'e kaydet
+                st.session_state.df_clean = df_clean
+
                 st.success("✅ Veri ön işleme tamamlandı!")
                 st.subheader("İşlenmiş Veri Önizleme")
                 st.dataframe(df_clean.head())
+
+                # Kullanıcıya bilgi ver
+                if removed_rows > 0:
+                    st.info(f"📌 {removed_rows} satır 'Postal Code' eksik olduğu için silindi. "
+                            f"Kalan satır sayısı: {after_rows}")
 
                 # Yapılan işlemleri göster
                 st.subheader("🔎 Yapılan İşlemler")
                 for step in steps:
                     st.write("•", step)
+                st.write("• Eksik 'Postal Code' satırları silindi")
 
                 # İndirme seçeneği
                 csv = df_clean.to_csv(index=False).encode("utf-8")
@@ -374,9 +390,15 @@ elif menu == "📉 Regresyon Modeli":
         from sklearn.model_selection import train_test_split
         from sklearn.linear_model import LinearRegression
 
+        # ✅ Ön işlem yapılmış veriyi kullan (session_state'ten al)
+        if "df_clean" in st.session_state:
+            df_reg = st.session_state.df_clean
+        else:
+            df_reg = df.dropna(subset=["Postal Code"])  # fallback
+
         # Özellikler ve hedef değişken
-        X = df[["Postal Code"]]   # Burada ister başka kolonlar da ekleyebilirsin
-        y = df["Sales"]
+        X = df_reg[["Postal Code"]]
+        y = df_reg["Sales"]
 
         # Eğitim / test ayrımı
         X_train, X_test, y_train, y_test = train_test_split(
@@ -394,9 +416,9 @@ elif menu == "📉 Regresyon Modeli":
         metrics = {
             "MAE": mean_absolute_error(y_test, y_pred),
             "MSE": mean_squared_error(y_test, y_pred),
-            "RMSE": root_mean_squared_error(y_test, y_pred),  # model_metrics.py'den
+            "RMSE": root_mean_squared_error(y_test, y_pred),
             "R2": r2_score(y_test, y_pred),
-            "SMAPE": smape(y_test, y_pred)                   # model_metrics.py'den
+            "SMAPE": smape(y_test, y_pred)
         }
 
         # Sonuçların tablo halinde gösterilmesi
