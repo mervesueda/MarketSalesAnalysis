@@ -57,54 +57,46 @@ if menu == "📂 Veri Önizleme":
 
 
 # 2.Ön işleme
-elif menu == "🔧 Ön İşleme":
-    if st.button("🚀 Veri Ön İşlemeyi Başlat"):
-        with st.spinner("Veri ön işleme başlatılıyor..."):
-            progress_text = "Veri ön işleniyor..."
-            my_bar = st.progress(0, text=progress_text)
+try:
+    # preprocess_data iki değer döndürüyor
+    df_clean, steps = preprocess_data(df)
 
-            for percent_complete in range(0, 101, 20):
-                time.sleep(0.5)
-                my_bar.progress(percent_complete, text=progress_text)
+    # 📌 Eksik Postal Code satırlarını sil
+    before_rows = df_clean.shape[0]
+    df_clean = df_clean.dropna(subset=["Postal Code"])
+    after_rows = df_clean.shape[0]
+    removed_rows = before_rows - after_rows
 
-            try:
-                # ✅ sadece df_clean dönüyor
-                df_clean = preprocess_data(df)
+    # 🔑 Session State'e kaydet
+    st.session_state.df_clean = df_clean
 
-                # 📌 Eksik Postal Code satırlarını sil
-                before_rows = df_clean.shape[0]
-                df_clean = df_clean.dropna(subset=["Postal Code"])
-                after_rows = df_clean.shape[0]
-                removed_rows = before_rows - after_rows
+    st.success("✅ Veri ön işleme tamamlandı!")
+    st.subheader("İşlenmiş Veri Önizleme")
+    st.dataframe(df_clean.head())
 
-                # 🔑 Session State'e kaydet
-                st.session_state.df_clean = df_clean
+    # Kullanıcıya bilgi ver
+    if removed_rows > 0:
+        st.info(f"📌 {removed_rows} satır 'Postal Code' eksik olduğu için silindi. "
+                f"Kalan satır sayısı: {after_rows}")
 
-                st.success("✅ Veri ön işleme tamamlandı!")
-                st.subheader("İşlenmiş Veri Önizleme")
-                st.dataframe(df_clean.head())
+    # Yapılan işlemleri göster
+    st.subheader("🔎 Yapılan İşlemler")
+    for step in steps:
+        st.write("•", step)
+    st.write("• Eksik 'Postal Code' satırları silindi")
 
-                # Kullanıcıya bilgi ver
-                if removed_rows > 0:
-                    st.info(f"📌 {removed_rows} satır 'Postal Code' eksik olduğu için silindi. "
-                            f"Kalan satır sayısı: {after_rows}")
+    # İndirme seçeneği
+    csv = df_clean.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="📥 İşlenmiş Veriyi İndir",
+        data=csv,
+        file_name="clean_data.csv",
+        mime="text/csv"
+    )
 
-                # Yapılan işlemler (steps yok, elle yazıyoruz)
-                st.subheader("🔎 Yapılan İşlemler")
-                st.write("• Ön işleme adımları uygulandı")
-                st.write("• Eksik 'Postal Code' satırları silindi")
+except Exception as e:
+    st.error(f"❌ Veri ön işleme sırasında bir hata oluştu: {e}")
 
-                # İndirme seçeneği
-                csv = df_clean.to_csv(index=False).encode("utf-8")
-                st.download_button(
-                    label="📥 İşlenmiş Veriyi İndir",
-                    data=csv,
-                    file_name="clean_data.csv",
-                    mime="text/csv"
-                )
-
-            except Exception as e:
-                st.error(f"❌ Veri ön işleme sırasında bir hata oluştu: {e}")
 
 
 
