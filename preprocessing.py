@@ -14,6 +14,25 @@ def convert_to_datetime(df, columns, dayfirst=True, fmt=None):
         )
     return df
 
+def preprocess_data(df):
+    # 1. Sütun isimlerini düzenle (boşlukları temizle, küçük harf yap)
+    df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
+
+    # 2. Boş değerleri doldurma (örnek olarak boş string ile)
+    df = df.fillna("")
+
+    # 3. Adres temizleme örneği
+    if "address" in df.columns:
+        df["clean_address"] = (
+            df["address"]
+            .astype(str)
+            .str.casefold()  # küçük harfe çevir (Türkçe karakter uyumlu)
+            .str.replace(r"[^\w\s]", " ", regex=True)  # noktalama işaretlerini kaldır
+            .apply(lambda x: " ".join(x.split()))  # fazla boşlukları sil
+        )
+
+    return df
+
 #belirtilen sütunları kategorik veriye çevirir
 def convert_to_category(df, columns):
     for col in columns:
