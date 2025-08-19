@@ -186,8 +186,6 @@ elif menu == "📊 Görselleştirmeler":
                 fig = plot_categorical_violin_for_streamlit(df, c, "Sales")
                 st.pyplot(fig)
 
-
-
 # 4.Zaman serisi
 elif menu == "📈 Zaman Serisi Tahminleri":
     st.header("📈 Zaman Serisi Tahminleri")
@@ -272,16 +270,15 @@ elif menu == "📈 Zaman Serisi Tahminleri":
                     ci.iloc[:, 0],
                     ci.iloc[:, 1],
                     color="#487D95", alpha=0.2)
-    
+
     forecast_end = ci.index[-1]  # Tahminin son günü
     ax.set_xlim(df_sarima.index.min(), forecast_end)
-    
-    plt.title("SARIMA Forecast vs Sales")
-    plt.legend()
-    st.pyplot(fig3)
 
+    ax.set_title("SARIMA Forecast vs Sales")
+    ax.legend()
+    st.pyplot(fig3)   # 🔑 SARIMA grafiği şimdi çıkmalı
 
- # Zaman serisi metrikleri
+    # Zaman serisi metrikleri
     st.subheader("📊 Model Performans Metrikleri (7 Günlük)")
 
     # Prophet metrikleri
@@ -315,6 +312,7 @@ elif menu == "📈 Zaman Serisi Tahminleri":
         "R2": [r2_prophet, r2_sarima]
     })
     st.dataframe(metrics_df)
+
 
 # 5. Regresyon modeli
 elif menu == "📉 Regresyon Modeli":
