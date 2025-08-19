@@ -66,17 +66,13 @@ elif menu == "🔧 Ön İşleme":
                 my_bar.progress(percent_complete, text=progress_text)
 
             try:
-                # preprocess_data iki değer döndürüyor
-                df_clean, steps = preprocess_data(df)
+                df_clean, steps = preprocess_data(df)   # ✅ iki değer yakala
 
-                # 📌 Eksik Postal Code satırlarını sil (sütun adı değiştirilmeden)
+                # 📌 Eksik Postal Code satırlarını sil
                 before_rows = df_clean.shape[0]
                 df_clean = df_clean.dropna(subset=["Postal Code"])
                 after_rows = df_clean.shape[0]
                 removed_rows = before_rows - after_rows
-
-                # Session State'e kaydet
-                st.session_state.df_clean = df_clean
 
                 st.success("✅ Veri ön işleme tamamlandı!")
                 st.subheader("İşlenmiş Veri Önizleme")
@@ -102,8 +98,8 @@ elif menu == "🔧 Ön İşleme":
                     mime="text/csv"
                 )
 
-            except Exception as e:
-                st.error(f"❌ Veri ön işleme sırasında bir hata oluştu: {e}")
+            except Exception:
+                st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
 
 
 
