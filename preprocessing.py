@@ -14,25 +14,6 @@ def convert_to_datetime(df, columns, dayfirst=True, fmt=None):
         )
     return df
 
-def preprocess_data(df):
-    # 1. Sütun isimlerini düzenle (boşlukları temizle, küçük harf yap)
-    df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
-
-    # 2. Boş değerleri doldurma (örnek olarak boş string ile)
-    df = df.fillna("")
-
-    # 3. Adres temizleme örneği
-    if "address" in df.columns:
-        df["clean_address"] = (
-            df["address"]
-            .astype(str)
-            .str.casefold()  # küçük harfe çevir (Türkçe karakter uyumlu)
-            .str.replace(r"[^\w\s]", " ", regex=True)  # noktalama işaretlerini kaldır
-            .apply(lambda x: " ".join(x.split()))  # fazla boşlukları sil
-        )
-
-    return df
-
 #belirtilen sütunları kategorik veriye çevirir
 def convert_to_category(df, columns):
     for col in columns:
@@ -110,7 +91,44 @@ def drop_duplicates_rows(df, subset=None, inplace=False):
     except Exception as e:
         print(f"[ERROR] Tekrar eden satırlar silinirken hata oluştu: {e}")
         return df
-    
+
+def preprocess_data(df):
+    steps = []  # yapılan işlemleri burada toplayacağız
+
+    # 1. Sütun isimlerini düzenle
+    old_cols = df.columns.tolist()
+    df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
+    if old_cols != df.columns.tolist():
+        steps.append(f"Sütun isimleri düzenlendi: {old_cols} -> {df.columns.tolist()}")
+
+    # 2. Boş değerleri doldurma
+    null_before = df.isnull().sum().sum()
+    df = df.fillna("")
+    null_after = df.isnull().sum().sum()
+    if null_before > null_after:
+        steps.append(f"Boş değerler dolduruldu ({null_before} → {null_after})")
+
+    # 3. Gereksiz sütun silme örneği
+    cols_to_drop = []
+    for col in df.columns:
+        if "unnamed" in col or col.strip() == "":
+            cols_to_drop.append(col)
+    if cols_to_drop:
+        df.drop(columns=cols_to_drop, inplace=True)
+        steps.append(f"Silinen sütunlar: {cols_to_drop}")
+
+    # 4. Adres temizleme
+    if "address" in df.columns:
+        df["clean_address"] = (
+            df["address"]
+            .astype(str)
+            .str.casefold()
+            .str.replace(r"[^\w\s]", " ", regex=True)
+            .apply(lambda x: " ".join(x.split()))
+        )
+        steps.append("`address` sütunu temizlenerek `clean_address` oluşturuldu")
+
+    return df, steps    
 
 def extract_ma_and_lag(df, value_col="Sales", window=30):
     try:

@@ -48,10 +48,10 @@ st.sidebar.info("Market Sales Analysis App")
 #1.Veri Temizleme
 if menu == "📂 Veri Önizleme":
     st.header("📂 Veri Önizleme")
-    st.write("### İlk 20 Satır")
+    st.write("### İlk 10 Satır")
     st.dataframe(df.head(20))
     st.write("### Son 20 Satır")
-    st.dataframe(df.tail(20))
+    st.dataframe(df.tail(10))
     st.write("### Veri Özeti")
     st.write(df.describe(include="all"))
 
@@ -73,6 +73,11 @@ elif menu == "🔧 Ön İşleme":
                 st.success("✅ Veri ön işleme tamamlandı!")
                 st.subheader("İşlenmiş Veri Önizleme")
                 st.dataframe(df_clean.head())
+
+                # Yapılan işlemleri göster
+                st.subheader("🔎 Yapılan İşlemler")
+                for step in steps:
+                    st.write("•", step)
 
                 # İndirme seçeneği
                 csv = df_clean.to_csv(index=False).encode("utf-8")
