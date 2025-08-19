@@ -49,8 +49,8 @@ st.sidebar.info("Market Sales Analysis App")
 if menu == "📂 Veri Önizleme":
     st.header("📂 Veri Önizleme")
     st.write("### İlk 10 Satır")
-    st.dataframe(df.head(20))
-    st.write("### Son 20 Satır")
+    st.dataframe(df.head(10))
+    st.write("### Son 10 Satır")
     st.dataframe(df.tail(10))
     st.write("### Veri Özeti")
     st.write(df.describe(include="all"))
@@ -92,15 +92,35 @@ elif menu == "🔧 Ön İşleme":
 
 
 
-# 3. görselleştirme
+# 3. Görselleştirmeler
 elif menu == "📊 Görselleştirmeler":
     st.header("📊 Keşifsel Veri Görselleştirme")
 
-    st.subheader("Korelasyon Isı Haritası")
-    plot_correlation(df)
+    # Grafik seçenekleri
+    grafik_listesi = [
+        "Korelasyon Isı Haritası",
+        "Kategorilere Göre Satış Dağılımı",
+        "Segmentlere Göre Satış Dağılımı",
+        "Bölgelere Göre Satış Dağılımı",
+        "Yıllara Göre Satış Dağılımı",
+        "Sezonlara Göre Satış Dağılımı",
+    ]
 
-    st.subheader("Kategorilere Göre Satış Dağılımı")
-    plot_pie_chart(df, label_col="Category", value_col="Sales", title="Kategori - Satış")
+    secilen_grafik = st.selectbox("Gösterilecek grafiği seçin:", grafik_listesi)
+
+    if st.button("📈 Grafiği Göster"):
+        if secilen_grafik == "Korelasyon Isı Haritası":
+            plot_correlation(df)
+        elif secilen_grafik == "Kategorilere Göre Satış Dağılımı":
+            plot_pie_chart(df, label_col="Category", value_col="Sales", title="Kategori - Satış")
+        elif secilen_grafik == "Segmentlere Göre Satış Dağılımı":
+            plot_pie_chart(df, label_col="Segment", value_col="Sales", title="Segment - Satış")
+        elif secilen_grafik == "Bölgelere Göre Satış Dağılımı":
+            plot_pie_chart(df, label_col="Region", value_col="Sales", title="Bölge - Satış")
+        elif secilen_grafik == "Yıllara Göre Satış Dağılımı":
+            plot_pie_chart(df, label_col="Year", value_col="Sales", title="Yıl - Satış")
+        elif secilen_grafik == "Sezonlara Göre Satış Dağılımı":
+            plot_pie_chart(df, label_col="Season", value_col="Sales", title="Sezon - Satış")
 
 # 4.Zaman serisi
 elif menu == "📈 Zaman Serisi Tahminleri":
