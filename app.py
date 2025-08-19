@@ -55,6 +55,7 @@ if menu == "📂 Veri Önizleme":
     st.write("### Veri Özeti")
     st.write(df.describe(include="all"))
 
+
 elif menu == "🔧 Ön İşleme":
     if st.button("🚀 Veri Ön İşlemeyi Başlat"):
         with st.spinner("Veri ön işleme başlatılıyor..."):
@@ -66,13 +67,17 @@ elif menu == "🔧 Ön İşleme":
                 my_bar.progress(percent_complete, text=progress_text)
 
             try:
-                df_clean, steps = preprocess_data(df)   # ✅ iki değer yakala
+                # preprocess_data çağrısı (df_clean, steps döner)
+                df_clean, steps = preprocess_data(df)
 
-                # 📌 Eksik Postal Code satırlarını sil
+                # 📌 Eksik satırları sil (sütun adlarına dokunmadan)
                 before_rows = df_clean.shape[0]
-                df_clean = df_clean.dropna(subset=["Postal Code"])
+                df_clean = df_clean.dropna()   # tüm NaN satırları temizle
                 after_rows = df_clean.shape[0]
                 removed_rows = before_rows - after_rows
+
+                # Session state'e kaydet
+                st.session_state.df_clean = df_clean
 
                 st.success("✅ Veri ön işleme tamamlandı!")
                 st.subheader("İşlenmiş Veri Önizleme")
@@ -80,14 +85,14 @@ elif menu == "🔧 Ön İşleme":
 
                 # Kullanıcıya bilgi ver
                 if removed_rows > 0:
-                    st.info(f"📌 {removed_rows} satır 'Postal Code' eksik olduğu için silindi. "
+                    st.info(f"📌 {removed_rows} satır eksik veri içerdiği için silindi. "
                             f"Kalan satır sayısı: {after_rows}")
 
                 # Yapılan işlemleri göster
                 st.subheader("🔎 Yapılan İşlemler")
                 for step in steps:
                     st.write("•", step)
-                st.write("• Eksik 'Postal Code' satırları silindi")
+                st.write("• Eksik veriler içeren satırlar silindi")
 
                 # İndirme seçeneği
                 csv = df_clean.to_csv(index=False).encode("utf-8")
@@ -98,8 +103,8 @@ elif menu == "🔧 Ön İşleme":
                     mime="text/csv"
                 )
 
-            except Exception:
-                st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
+            except Exception as e:
+                st.error(f"❌ Veri ön işleme sırasında bir hata oluştu: {e}")
 
 
 
