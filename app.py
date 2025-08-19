@@ -5,7 +5,7 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 from prophet import Prophet
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
+from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score,root_mean_squared_error
 from data_loader import *
 from data_visualization import *
 from model_metrics import *
@@ -110,17 +110,60 @@ elif menu == "📊 Görselleştirmeler":
 
     if st.button("📈 Grafiği Göster"):
         if secilen_grafik == "Korelasyon Isı Haritası":
+            fig = plot_correlation(df)   # fonksiyon fig return etmeli
+            st.pyplot(fig)
+
+        elif secilen_grafik == "Kategorilere Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, label_col="Category", value_col="Sales", title="Kategori - Satış")
+            st.pyplot(fig)
+
+        elif secilen_grafik == "Segmentlere Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, label_col="Segment", value_col="Sales", title="Segment - Satış")
+            st.pyplot(fig)
+
+        elif secilen_grafik == "Bölgelere Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, label_col="Region", value_col="Sales", title="Bölge - Satış")
+            st.pyplot(fig)
+
+        elif secilen_grafik == "Yıllara Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, label_col="Year", value_col="Sales", title="Yıl - Satış")
+            st.pyplot(fig)
+
+        elif secilen_grafik == "Sezonlara Göre Satış Dağılımı":
+            fig = plot_pie_chart(df, label_col="Season", value_col="Sales", title="Sezon - Satış")
+            st.pyplot(fig)
+
+# 3. Görselleştirmeler
+elif menu == "📊 Görselleştirmeler":
+    st.header("📊 Keşifsel Veri Görselleştirme")
+
+    # Grafik seçenekleri
+    grafik_listesi = [
+        "Korelasyon Isı Haritası",
+        "Kategorilere Göre Satış Dağılımı",
+        "Segmentlere Göre Satış Dağılımı",
+        "Bölgelere Göre Satış Dağılımı",
+        "Yıllara Göre Satış Dağılımı",
+        "Sezonlara Göre Satış Dağılımı",
+    ]
+
+    secilen_grafik = st.selectbox("Gösterilecek grafiği seçin:", grafik_listesi)
+
+    if st.button("📈 Grafiği Göster"):
+        if secilen_grafik == "Korelasyon Isı Haritası":
             plot_correlation(df)
         elif secilen_grafik == "Kategorilere Göre Satış Dağılımı":
-            plot_pie_chart(df, label_col="Category", value_col="Sales", title="Kategori - Satış")
+            plot_pie_chart(df, "Category", "Sales", "Kategori - Satış")
         elif secilen_grafik == "Segmentlere Göre Satış Dağılımı":
-            plot_pie_chart(df, label_col="Segment", value_col="Sales", title="Segment - Satış")
+            plot_pie_chart(df, "Segment", "Sales", "Segment - Satış")
         elif secilen_grafik == "Bölgelere Göre Satış Dağılımı":
-            plot_pie_chart(df, label_col="Region", value_col="Sales", title="Bölge - Satış")
+            plot_pie_chart(df, "Region", "Sales", "Bölge - Satış")
         elif secilen_grafik == "Yıllara Göre Satış Dağılımı":
-            plot_pie_chart(df, label_col="Year", value_col="Sales", title="Yıl - Satış")
+            plot_pie_chart(df, "Year", "Sales", "Yıl - Satış")
         elif secilen_grafik == "Sezonlara Göre Satış Dağılımı":
-            plot_pie_chart(df, label_col="Season", value_col="Sales", title="Sezon - Satış")
+            plot_pie_chart(df, "Season", "Sales", "Sezon - Satış")
+
+
 
 # 4.Zaman serisi
 elif menu == "📈 Zaman Serisi Tahminleri":
