@@ -283,57 +283,47 @@ elif menu == "📈 Zaman Serisi Tahminleri":
                 st.error(f"❌ SARIMA model eğitim hatası: {str(e)}")
                 st.stop()
 
-        # Tahmin yap
-        try:
-            forecast_sarima = results_sarima.get_forecast(7)
-            forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
+# Tahmin yap
+try:
+    forecast_sarima = results_sarima.get_forecast(7)
+    forecast_sarima_mean = forecast_sarima.predicted_mean.to_frame(name="yhat_sarima")
 
-            ci = forecast_sarima.conf_int().copy() 
-            ci.columns=["yhat_lower","yhat_upper"]
-            forecast_sarima_mean.index = test_sarima.index[:7]
-            ci.index = test_sarima.index[:7]
+    # SARIMA Tahmin tablosunu göster
+    st.write("SARIMA Tahmin Tablosu (Gelecek 7 Gün)")
+    forecast_display = forecast_sarima_mean.copy()
+    forecast_display["Tarih"] = forecast_display.index.strftime('%Y-%m-%d')
+    forecast_display = forecast_display[["Tarih", "yhat_sarima"]].round(2)
+    st.dataframe(forecast_display)
 
-            # Gerçek değerleri çiz
-            ax = df_sarima['Sales'].plot(label='Sales', figsize=(20, 6),color="#61AC80")
+    ci = forecast_sarima.conf_int().copy() 
+    ci.columns = ["yhat_lower", "yhat_upper"]
 
-            # SARIMA tahminlerini çiz
-            fig3=forecast_sarima.predicted_mean.plot(ax=ax, label='SARIMA Predict', color="#487D95")
+    # Çizim - TÜM VERİ + 7 GÜNLÜK TAHMİN
+    fig3, ax = plt.subplots(figsize=(12, 6))
+    
+    # Tüm gerçek satış verilerini çiz
+    df_sarima["Sales"].plot(ax=ax, label="Gerçek Satış", color="#61AC80", linewidth=2)
+    
+    # 7 günlük tahmini çiz
+    forecast_sarima_mean["yhat_sarima"].plot(ax=ax, label="SARIMA Tahmin", 
+                                            color="#487D95", linewidth=2, 
+                                            linestyle='--')
+    
+    # Güven aralığı
+    ax.fill_between(ci.index, ci["yhat_lower"], ci["yhat_upper"], 
+                   color="#487D95", alpha=0.2, label="Güven Aralığı")
 
-            # Güven aralığını doldur
-            ax.fill_between(ci.index,
-                            ci.iloc[:, 0],
-                            ci.iloc[:, 1],
-                            color='#487D95', alpha=0.2)
+    ax.set_title("SARIMA Tahmin Sonuçları", fontsize=14, fontweight='bold')
+    ax.set_xlabel("Tarih", fontsize=12)
+    ax.set_ylabel("Satış", fontsize=12)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    
+    st.pyplot(fig3)
 
-            forecast_end = ci.index[-1]  # Tahminin son günü
-            ax.set_xlim(df_sarima.index.min(), forecast_end)
-
-            # Çizim
-            fig3, ax = plt.subplots(figsize=(12, 6))
-            
-            # Son 30 günü göster (çok uzun olmasın diye)
-            recent_data = df_sarima["Sales"].tail(30)
-            recent_data.plot(ax=ax, label="Gerçek Satış", color="#61AC80", linewidth=2)
-            
-            forecast_sarima_mean["yhat_sarima"].plot(ax=ax, label="SARIMA Tahmin", 
-                                                    color="#487D95", linewidth=2, 
-                                                    linestyle='--')
-            
-            # Güven aralığı
-            ax.fill_between(ci.index, ci["yhat_lower"], ci["yhat_upper"], 
-                           color="#487D95", alpha=0.2, label="Güven Aralığı")
-
-            ax.set_title("SARIMA Tahmin Sonuçları", fontsize=14, fontweight='bold')
-            ax.set_xlabel("Tarih", fontsize=12)
-            ax.set_ylabel("Satış", fontsize=12)
-            ax.legend()
-            ax.grid(True, alpha=0.3)
-            plt.tight_layout()
-            
-            st.pyplot(fig3)
-
-        except Exception as e:
-            st.error(f"❌ SARIMA tahmin hatası: {str(e)}")
+except Exception as e:
+    st.error(f"❌ SARIMA tahmin hatası: {str(e)}")
 
     except Exception as e:
         st.error(f"❌ SARIMA veri hazırlama hatası: {str(e)}")
