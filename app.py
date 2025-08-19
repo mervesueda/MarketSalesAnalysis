@@ -272,6 +272,10 @@ elif menu == "📈 Zaman Serisi Tahminleri":
                     ci.iloc[:, 0],
                     ci.iloc[:, 1],
                     color="#487D95", alpha=0.2)
+    
+    forecast_end = ci.index[-1]  # Tahminin son günü
+    ax.set_xlim(df_sarima.index.min(), forecast_end)
+    
     plt.title("SARIMA Forecast vs Sales")
     plt.legend()
     st.pyplot(fig3)
