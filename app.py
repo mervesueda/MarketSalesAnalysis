@@ -66,33 +66,17 @@ elif menu == "🔧 Ön İşleme":
                 my_bar.progress(percent_complete, text=progress_text)
 
             try:
-                # preprocess_data çalıştır
-                df_clean, steps = preprocess_data(df)
-
-                # 📌 Sadece Postal Code boş olan satırları sil
-                before_rows = df_clean.shape[0]
-                df_clean = df_clean.dropna(subset=["Postal Code"])
-                after_rows = df_clean.shape[0]
-                removed_rows = before_rows - after_rows
-
-                # Session state'e kaydet
-                st.session_state.df_clean = df_clean
-
+                df_clean, steps = preprocess_data(df)   # ✅ iki değer yakala
                 st.success("✅ Veri ön işleme tamamlandı!")
                 st.subheader("İşlenmiş Veri Önizleme")
                 st.dataframe(df_clean.head())
 
-                if removed_rows > 0:
-                    st.info(f"📌 'Postal Code' sütunu boş olan {removed_rows} satır silindi. "
-                            f"Kalan satır sayısı: {after_rows}")
-
-                # Yapılan işlemler listesine bunu da ekle
+                # Yapılan işlemleri göster
                 st.subheader("🔎 Yapılan İşlemler")
                 for step in steps:
                     st.write("•", step)
-                st.write("• 'Postal Code' sütunu boş olan satırlar silindi")
 
-                # CSV indirme
+                # İndirme seçeneği
                 csv = df_clean.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="📥 İşlenmiş Veriyi İndir",
@@ -101,8 +85,9 @@ elif menu == "🔧 Ön İşleme":
                     mime="text/csv"
                 )
 
-            except Exception as e:
-                st.error(f"❌ Veri ön işleme sırasında bir hata oluştu: {e}")
+            except Exception:
+                st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
+
 
 
 elif menu == "📊 Görselleştirmeler":
