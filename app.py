@@ -60,16 +60,15 @@ if menu == "📂 Veri Önizleme":
 elif menu == "🔧 Ön İşleme":
     if st.button("🚀 Veri Ön İşlemeyi Başlat"):
         with st.spinner("Veri ön işleme başlatılıyor..."):
-            # Adım adım ilerleme göstergesi
             progress_text = "Veri ön işleniyor..."
             my_bar = st.progress(0, text=progress_text)
 
             for percent_complete in range(0, 101, 20):
-                time.sleep(0.5)  # sadece simülasyon için
+                time.sleep(0.5)
                 my_bar.progress(percent_complete, text=progress_text)
 
             try:
-                df_clean = preprocess_data(df)
+                df_clean, steps = preprocess_data(df)   # ✅ iki değer yakala
                 st.success("✅ Veri ön işleme tamamlandı!")
                 st.subheader("İşlenmiş Veri Önizleme")
                 st.dataframe(df_clean.head())
@@ -89,8 +88,8 @@ elif menu == "🔧 Ön İşleme":
                 )
 
             except Exception:
-                # Traceback veya kodu gösterme!
                 st.error("❌ Veri ön işleme sırasında bir hata oluştu.")
+
 
 
 # 3. görselleştirme
