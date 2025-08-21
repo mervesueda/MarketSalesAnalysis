@@ -16,8 +16,8 @@ import time
 
 
 # Sayfa ayarları
-st.set_page_config(page_title="Market Sales Analysis", layout="wide", page_icon="📊")
-st.title("📊 Market Sales Analysis ")
+st.set_page_config(page_title="Market Satış Analizi ve Tahmini", layout="wide", page_icon="📊")
+st.title("📊 Market Satış Analizi ve Tahmini")
 
 st.markdown("""
 Bu uygulama, satış verilerini analiz etmek, ***linear regression modeli*** ve **zaman serisi tahminleri** (SARIMA & Prophet) gerçekleştirmek için geliştirilmiştir.
