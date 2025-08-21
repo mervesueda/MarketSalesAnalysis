@@ -11,4 +11,3 @@ prophet
 pmdarima
 pystan
 xgboost
-python-3.10
